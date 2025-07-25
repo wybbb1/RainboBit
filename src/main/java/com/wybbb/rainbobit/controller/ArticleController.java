@@ -1,6 +1,6 @@
 package com.wybbb.rainbobit.controller;
 
-import com.wybbb.rainbobit.enums.AppHttpCodeEnum;
+import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.pojo.entity.Article;
 import com.wybbb.rainbobit.pojo.vo.ArticleDetailVO;

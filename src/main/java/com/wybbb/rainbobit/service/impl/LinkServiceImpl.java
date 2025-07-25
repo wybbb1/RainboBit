@@ -34,15 +34,17 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
     @Override
     public List<LinkVO> getAllLink() {
-        List<Link> list = cacheHelper.list(
+        return cacheHelper.list(
                 LinkConstants.LINK_CACHE_KEY,
-                Link.class,
-                () -> linkMapper.selectList(new LambdaQueryWrapper<Link>()
-                        .eq(Link::getStatus, LinkConstants.LINK_STATUS_NORMAL)
-                        .orderByAsc(Link::getCreateTime))
-        );
+                LinkVO.class,
+                () -> {
+                    List<Link> links = linkMapper.selectList(new LambdaQueryWrapper<Link>()
+                            .eq(Link::getStatus, LinkConstants.LINK_STATUS_NORMAL)
+                            .orderByAsc(Link::getCreateTime));
 
-        return BeanUtil.copyToList(list, LinkVO.class);
+                    return BeanUtil.copyToList(links, LinkVO.class);
+                }
+        );
     }
 }
 

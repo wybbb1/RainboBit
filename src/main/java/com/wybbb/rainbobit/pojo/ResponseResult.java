@@ -1,7 +1,7 @@
 package com.wybbb.rainbobit.pojo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.wybbb.rainbobit.enums.AppHttpCodeEnum;
+import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
