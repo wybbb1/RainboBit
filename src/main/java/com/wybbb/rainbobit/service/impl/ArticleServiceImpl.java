@@ -10,6 +10,8 @@ import com.wybbb.rainbobit.mapper.ArticleMapper;
 import com.wybbb.rainbobit.pojo.PageResult;
 import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.pojo.entity.Article;
+import com.wybbb.rainbobit.pojo.entity.Category;
+import com.wybbb.rainbobit.pojo.vo.ArticleDetailVO;
 import com.wybbb.rainbobit.pojo.vo.ArticleListVO;
 import com.wybbb.rainbobit.pojo.vo.CategoryVO;
 import com.wybbb.rainbobit.pojo.vo.HotArticleVO;
@@ -18,11 +20,9 @@ import com.wybbb.rainbobit.service.CategoryService;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -61,38 +61,63 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return BeanUtil.copyToList(articles, HotArticleVO.class);
     }
 
+    @Transactional
     @Override
     public PageResult<ArticleListVO> articleList(Integer page, Integer pageSize, Long categoryId) {
 
-        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Article::getStatus, ArticleConstants.ARTICLE_STATUS_NORMAL) // 0表示正常状态
+        LambdaQueryWrapper<Article> articleQueryWrapper = new LambdaQueryWrapper<>();
+        articleQueryWrapper.eq(Article::getStatus, ArticleConstants.ARTICLE_STATUS_NORMAL) // 0表示正常状态
                 .eq(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED) // 0表示未删除状态
                 .eq(Objects.nonNull(categoryId) && categoryId > 0, Article::getCategoryId, categoryId) // 如果categoryId不为null且大于0，则添加分类条件
                 .orderByDesc(Article::getIsTop) // 先按照置顶状态降序
                 .orderByDesc(Article::getCreateTime); // 再按照创建时间降序
 
         Page<Article> articlePage = new Page<>(page, pageSize);
-        page(articlePage, queryWrapper);
+        page(articlePage, articleQueryWrapper);
 
         // 获取所有分类信息
-        List<CategoryVO> categoryVOS = categoryService.listCategory();
-        Map<Long, String> categoryMap = categoryVOS.stream()
-                .collect(Collectors.toMap(CategoryVO::getId, CategoryVO::getName));
-        // 如果分类信息不存在，则从数据库中获取,但是几乎不可能会需要查询数据库
-        // 为Article添加categoryName属性
-        List<Article> articles = articlePage.getRecords().stream()
-                .map(article -> {
-                    String name = categoryMap.get(article.getCategoryId());
-                    if (Objects.isNull(name) || name.isBlank()) {
-                        name = "未分类";
-                    }
-                    article.setCategoryName(name);
-                    return article;
-                }).toList();
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(CategoryConstants.CATEGORY_CACHE_KEY);
+        // 如果分类信息不存在，则从数据库中获取
+        if (entries.isEmpty()){
+            // 获取文章列表中的所有分类ID
+            Set<Long> categoryIds = articlePage.getRecords().stream()
+                    .map(Article::getCategoryId)
+                    .collect(Collectors.toSet());
+            // 查询分类信息
+            LambdaQueryWrapper<Category> categoryQueryWrapper = new LambdaQueryWrapper<>();
+            categoryQueryWrapper.in(Category::getId, categoryIds);
+            entries = categoryService.list(categoryQueryWrapper).stream()
+                    .collect(Collectors.toMap(Category::getId, Category::getName));
+        }
+        // 将分类信息转换为Map
+        List<ArticleListVO> articleListVOS = BeanUtil.copyToList(articlePage.getRecords(), ArticleListVO.class);
+        // 遍历文章列表，设置分类名称
+        Map<Object, Object> finalEntries = entries;
+        articleListVOS.forEach(articleListVO -> {
+            articleListVO.setCategoryName((String) finalEntries.get(articleListVO.getCategoryId()));
+        });
 
-        List<ArticleListVO> articleListVOS = BeanUtil.copyToList(articles, ArticleListVO.class);
-        PageResult<ArticleListVO> pageResult = new PageResult<>(articlePage.getTotal(), articleListVOS);
+        return new PageResult<>(articlePage.getTotal(), articleListVOS);
+    }
 
-        return pageResult;
+    @Override
+    public ArticleDetailVO articleDetail(Long id) {
+        Article article = articleMapper.selectById(id);
+        if (Objects.isNull(article) ||
+                Integer.parseInt(article.getStatus()) != ArticleConstants.ARTICLE_STATUS_NORMAL ||
+                article.getDelFlag() != ArticleConstants.ARTICLE_STATUS_NOT_DELETED
+        ) {
+            return null;
+        }
+
+        ArticleDetailVO articleDetailVO = BeanUtil.copyProperties(article, ArticleDetailVO.class);
+        // 获取文章分类名称
+        Object categoryName = stringRedisTemplate.opsForHash().get(CategoryConstants.CATEGORY_CACHE_KEY, article.getCategoryId().toString());
+        if (Objects.isNull(categoryName)){
+            categoryName = categoryService.getById(article.getCategoryId()).getName();
+        }
+        articleDetailVO.setCategoryName(categoryName.toString());
+
+        return articleDetailVO;
     }
 }

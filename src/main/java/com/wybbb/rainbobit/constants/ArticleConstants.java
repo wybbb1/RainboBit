@@ -12,7 +12,7 @@ public class ArticleConstants {
 
     public static final int HOT_ARTICLES_SHOW_PER_PAGE = 10;
 
-    public static final Object ARTICLE_STATUS_DELETED = 1;
+    public static final int ARTICLE_STATUS_DELETED = 1;
 
-    public static final Object ARTICLE_STATUS_NOT_DELETED = 0;
+    public static final int ARTICLE_STATUS_NOT_DELETED = 0;
 }

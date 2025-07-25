@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.wybbb.rainbobit.pojo.PageResult;
 import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.pojo.entity.Article;
+import com.wybbb.rainbobit.pojo.vo.ArticleDetailVO;
 import com.wybbb.rainbobit.pojo.vo.ArticleListVO;
 import com.wybbb.rainbobit.pojo.vo.HotArticleVO;
 
@@ -20,4 +21,6 @@ public interface ArticleService extends IService<Article> {
     List<HotArticleVO> hotAricleList();
 
     PageResult<ArticleListVO> articleList(Integer page, Integer pageSize, Long categoryId);
+
+    ArticleDetailVO articleDetail(Long id);
 }
