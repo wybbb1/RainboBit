@@ -1,0 +1,32 @@
+server:
+  port: 7777
+
+spring:
+  application:
+    name: RainBoBit
+
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 5MB
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+rainbobit:
+  oss:
+    endpoint: ${rainbobit.oss.endpoint}
+    access-key-id: ${rainbobit.oss.access-key-id}
+    access-key-secret: ${rainbobit.oss.access-key-secret}
+    bucket-name: ${rainbobit.oss.bucket-name}
+    domain: ${rainbobit.oss.domain}
+    region: ${rainbobit.oss.region}
