@@ -19,7 +19,7 @@ import java.util.List;
 public class CategoryController {
 
     @Resource
-    private CategoryService categoryService
+    private CategoryService categoryService;
 
     /**
      * 获取分类列表
