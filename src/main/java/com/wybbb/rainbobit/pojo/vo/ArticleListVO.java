@@ -6,29 +6,34 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
+import java.util.Date;
 
-/**
- * 文章表(Article)实体类
- *
- * @author Ra1nbot
- * @since 2025-07-24 15:14:07
- */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class HotArticleVO implements Serializable {
-    private static final long serialVersionUID = 684844833199262384L;
+@AllArgsConstructor
+public class ArticleListVO {
 
     private Long id;
-/**
+    /**
      * 标题
      */
     private String title;
-/**
+    /**
+     * 文章摘要
+     */
+    private String summary;
+    /**
+     * 缩略图
+     */
+    private String thumbnail;
+    /**
+     * 所属分类name
+     */
+    private String categoryName;
+    /**
      * 访问量
      */
     private Long viewCount;
 
+    private Date createTime;
 }
-

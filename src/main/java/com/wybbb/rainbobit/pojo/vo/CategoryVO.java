@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("rbb_article")
 public class CategoryVO {
-    @TableId
     private Long id;
 
     //分类名

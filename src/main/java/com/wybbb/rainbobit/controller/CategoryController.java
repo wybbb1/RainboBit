@@ -28,7 +28,7 @@ public class CategoryController {
      */
     @GetMapping("/getCategoryList")
     public ResponseResult<List<CategoryVO>> getAllCategory() {
-        return categoryService.listCategory();
+        return ResponseResult.okResult(categoryService.listCategory());
     }
 
 }

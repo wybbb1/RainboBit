@@ -32,6 +32,10 @@ spring:
           time-between-eviction-runs: 10s
       database: 1
 
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

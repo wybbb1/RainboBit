@@ -2,6 +2,7 @@ package com.wybbb.rainbobit.pojo.entity;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,7 +42,6 @@ public class Category  {
     private Integer delFlag;
 //引用次数
     private Integer refer_cnt;
-
 
 }
 

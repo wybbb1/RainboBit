@@ -1,5 +1,6 @@
 package com.wybbb.rainbobit.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,7 @@ public class Article implements Serializable {
 
     @TableId
     private Long id;
-/**
+    /**
      * 标题
      */
     private String title;
@@ -40,6 +41,12 @@ public class Article implements Serializable {
      * 所属分类id
      */
     private Long categoryId;
+
+/**
+     * 所属分类名称
+     */
+    @TableField(exist = false)
+    private String categoryName;
 /**
      * 缩略图
      */
