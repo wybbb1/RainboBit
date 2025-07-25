@@ -1,13 +1,11 @@
 package com.wybbb.rainbobit;
 
-import com.wybbb.rainbobit.common.util.R2OssUtil;
+import com.wybbb.rainbobit.common.utils.R2OssUtil;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.awt.*;
 import java.io.File;
-import java.nio.file.Path;
 
 @SpringBootTest
 class RainBoBitApplicationTests {

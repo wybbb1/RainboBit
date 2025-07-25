@@ -1,4 +1,4 @@
-package com.wybbb.rainbobit.enums;
+package com.wybbb.rainbobit.common.enums;
 
 public enum AppHttpCodeEnum {
     // 成功

@@ -2,23 +2,18 @@ package com.wybbb.rainbobit.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wybbb.rainbobit.constants.CategoryConstants;
+import com.wybbb.rainbobit.common.constants.CategoryConstants;
 import com.wybbb.rainbobit.mapper.CategoryMapper;
-import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.pojo.entity.Category;
 import com.wybbb.rainbobit.pojo.vo.CategoryVO;
 import com.wybbb.rainbobit.service.CategoryService;
-import com.wybbb.rainbobit.utils.StringUtils;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 

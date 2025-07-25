@@ -1,4 +1,4 @@
-package com.wybbb.rainbobit.constants;
+package com.wybbb.rainbobit.common.constants;
 
 public class ArticleConstants {
     /**

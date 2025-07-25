@@ -21,7 +21,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 @TableName("rbb_article")
 public class Article implements Serializable {
-    private static final long serialVersionUID = 684844833199262384L;
 
     @TableId
     private Long id;

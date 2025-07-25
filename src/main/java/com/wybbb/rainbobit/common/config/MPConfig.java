@@ -1,4 +1,4 @@
-package com.wybbb.rainbobit.config;
+package com.wybbb.rainbobit.common.config;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;

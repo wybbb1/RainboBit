@@ -1,4 +1,4 @@
-package com.wybbb.rainbobit.config;
+package com.wybbb.rainbobit.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

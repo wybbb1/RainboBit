@@ -1,4 +1,4 @@
-package com.wybbb.rainbobit.common.util;
+package com.wybbb.rainbobit.common.utils;
 
 import com.wybbb.rainbobit.common.prop.R2OssProperties;
 import lombok.extern.slf4j.Slf4j;
