@@ -10,7 +10,6 @@ import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.pojo.entity.Article;
 import com.wybbb.rainbobit.pojo.vo.HotArticleVO;
 import com.wybbb.rainbobit.service.ArticleService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,7 +29,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public ResponseResult<List<HotArticleVO>> hotAricleList() {
 
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Article::getStatus, ArticleConstants.ARTICLE_STATUS_NORMAL) // 0表示正常状态;
+        queryWrapper.eq(Article::getStatus, ArticleConstants.ARTICLE_STATUS_NORMAL) // 0表示正常状态
+                .eq(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED)
                 .orderByDesc(Article::getViewCount); // 按照浏览量降序
 
         Page<Article> page = new Page<>(1, ArticleConstants.HOT_ARTICLES_SHOW_PER_PAGE);

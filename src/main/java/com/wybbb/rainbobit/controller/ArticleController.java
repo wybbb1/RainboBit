@@ -1,7 +1,6 @@
 package com.wybbb.rainbobit.controller;
 
 import com.wybbb.rainbobit.pojo.ResponseResult;
-import com.wybbb.rainbobit.pojo.entity.Article;
 import com.wybbb.rainbobit.pojo.vo.HotArticleVO;
 import com.wybbb.rainbobit.service.ArticleService;
 import jakarta.annotation.Resource;
