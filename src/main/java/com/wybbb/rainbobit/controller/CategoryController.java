@@ -15,7 +15,7 @@ import java.util.List;
  * @since 2025-07-25 10:34:47
  */
 @RestController(value = "blogCategoryController")
-@RequestMapping("category")
+@RequestMapping("/category")
 public class CategoryController {
 
     @Resource

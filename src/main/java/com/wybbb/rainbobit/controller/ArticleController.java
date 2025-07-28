@@ -1,6 +1,7 @@
 package com.wybbb.rainbobit.controller;
 
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
+import com.wybbb.rainbobit.pojo.PageQuery;
 import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.pojo.entity.Article;
 import com.wybbb.rainbobit.pojo.vo.ArticleDetailVO;
@@ -28,8 +29,8 @@ public class ArticleController {
     }
 
     @GetMapping("/articleList")
-    public ResponseResult articleList(Integer page, Integer pageSize, Long categoryId) {
-        return ResponseResult.okResult(articleService.articleList(page, pageSize, categoryId));
+    public ResponseResult articleList(Long categoryId, PageQuery pageQuery) {
+        return ResponseResult.okResult(articleService.articleList(categoryId, pageQuery));
     }
 
     @GetMapping("/{id}")

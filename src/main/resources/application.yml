@@ -48,3 +48,10 @@ rainbobit:
     bucket-name: ${rainbobit.oss.bucket-name}
     domain: ${rainbobit.oss.domain}
     region: ${rainbobit.oss.region}
+
+  jwt:
+    secret-key: ${sky.jwt.secret-key}
+    ttl: ${sky.jwt.ttl}
+    token-name: ${sky.jwt.token-name}
+
+
