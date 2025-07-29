@@ -23,5 +23,9 @@ public interface UserService extends IService<User> {
     UserInfoVO getUserInfo();
 
     String upload(MultipartFile img);
+
+    void updateUserInfo(User user);
+
+    void register(User user);
 }
 

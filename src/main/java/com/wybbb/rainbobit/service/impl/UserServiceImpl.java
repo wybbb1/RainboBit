@@ -1,6 +1,7 @@
 package com.wybbb.rainbobit.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wybbb.rainbobit.common.constants.JwtClaimsConstant;
 import com.wybbb.rainbobit.common.constants.UserConstants;
@@ -146,6 +147,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.error("文件上传时发生未知错误: {} : {}", originalFilename, e.getMessage(), e);
             throw new SystemException(UserConstants.FILE_UPLOAD_ERROR);
         }
+    }
+
+    @Override
+    public void updateUserInfo(User user) {
+        //TODO:或许存在安全问题，因为是直接传的用户id
+        updateById(user);
+    }
+
+    @Override
+    public void register(User user) {
+        //TODO:可以更新为邮箱注册
+        if (user.getUserName() == null || user.getUserName().isBlank()){
+            throw new SystemException(UserConstants.USERNAME_IS_NULL);
+        }
+        if (user.getPassword() == null || user.getPassword().isBlank()){
+            throw new SystemException(UserConstants.PASSWORD_IS_NULL);
+        }
+        if (user.getEmail() == null || user.getEmail().isBlank()){
+            throw new SystemException(UserConstants.EMAIL_IS_NULL);
+        }
+        if (user.getNickName() == null || user.getNickName().isBlank()){
+            throw new SystemException(UserConstants.NICKNAME_IS_NULL);
+        }
+
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUserName, user.getUserName());
+        User existingUser = getOne(queryWrapper);
+        if (existingUser != null) {
+            throw new SystemException(UserConstants.USERNAME_ALREADY_EXISTS);
+        }
+
+        save(user);
     }
 
 
