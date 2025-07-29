@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -75,12 +76,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // 对于登录接口 允许匿名访问
                         .requestMatchers("/login").anonymous()
-                        .anyRequest().authenticated()
-                ).logout(AbstractHttpConfigurer::disable)
-                .formLogin(form -> form
-                        .loginProcessingUrl("/login")
-                        .loginPage("/login")
-                        .permitAll());
+                        //注销接口需要认证才能访问
+                        .requestMatchers("/logout").authenticated()
+                        //个人信息接口必须登录后才能访问
+                        .requestMatchers("/user/userInfo").authenticated()
+                        .anyRequest().permitAll()
+                ).logout(AbstractHttpConfigurer::disable);
+
 
         //把jwtAuthenticationTokenFilter添加到SpringSecurity的过滤器链中
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -90,6 +92,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(authenticationEntryPoint) // 配置认证入口点
                 .accessDeniedHandler(accessDeniedHandler) // 配置访问拒绝处理器
         );
+
             // 禁用 CSRF 保护 (仅用于测试或某些特殊场景，生产环境不建议禁用)
             // .csrf(csrf -> csrf.disable());
 

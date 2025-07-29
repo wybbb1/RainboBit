@@ -21,6 +21,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseResult exceptionHandler(Exception e){
+        e.printStackTrace();
         //打印异常信息
         log.error("服务器异常");
         //从异常对象中获取提示信息封装返回

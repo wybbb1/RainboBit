@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 @Component
@@ -47,20 +49,16 @@ public class R2OssUtil {
      * 上传文件到 R2，并返回可公开访问的 URL。
      *
      * @param file       要上传的本地文件
-     * @param objectName 在存储桶中存储的对象名称 (可以包含路径，例如 "images/avatar.jpg")。
      * 如果为 null 或空，则会生成一个基于 UUID 的随机文件名，并保留原始扩展名。
      * @return 上传成功后文件的公开访问 URL，失败则返回 null。
      */
-    public String upload(File file, String objectName) {
+    public String upload(File file) {
         if (file == null || !file.exists()) {
             log.error("Upload failed: File is null or does not exist.");
             return null;
         }
 
-        String key = objectName;
-        if (key == null || key.trim().isEmpty()) {
-            key = generateUniqueObjectName(file.getName());
-        }
+        String key = generateUniqueObjectName(file.getName());
 
         String contentType;
         try {
@@ -105,6 +103,7 @@ public class R2OssUtil {
             contentType = "application/octet-stream";
         }
 
+        objectName = generateUniqueObjectName(objectName);
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(r2OssProperties.getBucketName())
@@ -210,12 +209,16 @@ public class R2OssUtil {
      * @return 基于 UUID 的唯一对象名
      */
     private String generateUniqueObjectName(String originalFilename) {
-        String extension = "";
-        int lastDot = originalFilename.lastIndexOf('.');
-        if (lastDot > 0 && lastDot < originalFilename.length() - 1) {
-            extension = originalFilename.substring(lastDot); // .jpg, .png
-        }
-        return UUID.randomUUID().toString().replace("-", "") + extension;
+        //根据日期生成路径
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
+        String datePath = sdf.format(new Date());
+        //uuid作为文件名
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+        //后缀和文件后缀一致
+        int index = originalFilename.lastIndexOf(".");
+        // test.jpg -> .jpg
+        String fileType = originalFilename.substring(index);
+        return new StringBuilder().append(datePath).append(uuid).append(fileType).toString();
     }
 
 }

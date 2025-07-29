@@ -1,11 +1,16 @@
 package com.wybbb.rainbobit.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wybbb.rainbobit.common.constants.JwtClaimsConstant;
 import com.wybbb.rainbobit.common.constants.UserConstants;
+import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.common.prop.JwtProperties;
 import com.wybbb.rainbobit.common.utils.JwtUtil;
+import com.wybbb.rainbobit.common.utils.R2OssUtil;
 import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
+import com.wybbb.rainbobit.common.utils.SecurityUtils;
+import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.mapper.UserMapper;
 import com.wybbb.rainbobit.pojo.dto.UserLoginDTO;
 import com.wybbb.rainbobit.pojo.entity.BlogUserLoginVo;
@@ -14,6 +19,7 @@ import com.wybbb.rainbobit.pojo.entity.User;
 import com.wybbb.rainbobit.pojo.vo.UserInfoVO;
 import com.wybbb.rainbobit.service.UserService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,10 +29,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * 用户表(SysUser)表服务实现类
@@ -35,6 +47,7 @@ import java.util.Objects;
  * @since 2025-07-26 11:11:33
  */
 @Service("UserService")
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
@@ -44,7 +57,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private RedisCacheHelper redisCacheHelper;
     @Resource
-    private UserDetailsService userDetailsService;
+    private R2OssUtil r2OssUtil;
 
     @Override
     public BlogUserLoginVo login(UserLoginDTO userLoginDTO) {
@@ -92,6 +105,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         SecurityContextHolder.clearContext();
 
         return;
+    }
+
+    @Override
+    public UserInfoVO getUserInfo() {
+        Long userId = SecurityUtils.getUserId();
+        User user = getById(userId);
+        if (Objects.isNull(user)) {
+            throw new SystemException(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        return BeanUtil.copyProperties(user, UserInfoVO.class);
+    }
+
+    @Override
+    public String upload(MultipartFile img) {
+        String originalFilename = img.getOriginalFilename();
+
+        if (originalFilename != null && !originalFilename.endsWith(".png")) {
+            throw new SystemException(UserConstants.FILE_TYPE_ERROR);
+        }
+
+        // 1. 获取文件基本信息
+        long size = img.getSize();
+        String contentType = img.getContentType();
+        // 2. 生成文件名
+        String objectName = img.getOriginalFilename();
+        // 3. 上传文件到R2
+        try (InputStream inputStream = img.getInputStream()) {
+            String fileUrl = r2OssUtil.upload(inputStream, objectName, size, contentType);
+
+            if (fileUrl != null) {
+                log.info("文件上传成功: {}，访问URL: {}", originalFilename, fileUrl);
+                return fileUrl;
+            } else {
+                log.error("文件上传失败: {}，R2OssUtil未能返回URL。", originalFilename);
+                // R2OssUtil 内部应该已经记录了更详细的S3Exception日志
+                throw new SystemException(UserConstants.FILE_UPLOAD_ERROR);
+            }
+        } catch (Exception e) {
+            log.error("文件上传时发生未知错误: {} : {}", originalFilename, e.getMessage(), e);
+            throw new SystemException(UserConstants.FILE_UPLOAD_ERROR);
+        }
     }
 
 

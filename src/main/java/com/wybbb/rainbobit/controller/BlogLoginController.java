@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2025-07-26 11:11:33
  */
 @Slf4j
-@Controller("blogLoginController")
+@RestController("blogLoginController")
 public class BlogLoginController {
 
     @Resource

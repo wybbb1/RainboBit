@@ -17,7 +17,7 @@ class RainBoBitApplicationTests {
     void uploadFileTest() throws InterruptedException {
         File file = new File("C:\\Users\\95887\\Desktop\\post\\takeout\\img\\cache.png");
         String fileName = "test/cache.png";
-        String url = r2OssUtil.upload(file, fileName);
+        String url = r2OssUtil.upload(file);
         System.out.println("Uploaded file URL: " + url);
 
         // 验证文件是否存在

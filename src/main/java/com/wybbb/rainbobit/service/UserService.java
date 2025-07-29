@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.wybbb.rainbobit.pojo.dto.UserLoginDTO;
 import com.wybbb.rainbobit.pojo.entity.BlogUserLoginVo;
 import com.wybbb.rainbobit.pojo.entity.User;
+import com.wybbb.rainbobit.pojo.vo.UserInfoVO;
+import org.springframework.web.multipart.MultipartFile;
 
 
 /**
@@ -17,5 +19,9 @@ public interface UserService extends IService<User> {
     BlogUserLoginVo login(UserLoginDTO userLoginDTO);
 
     void logout();
+
+    UserInfoVO getUserInfo();
+
+    String upload(MultipartFile img);
 }
 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wybbb.rainbobit.mapper.CommentMapper">
+
+    <select id="listRootComment" resultType="com.wybbb.rainbobit.pojo.vo.CommentVO">
+        SELECT
+            c.id AS id,
+            c.article_id AS articleId,
+            c.root_id AS rootId,
+            c.content AS content,
+            c.to_comment_user_id AS toCommentUserId,
+            c.to_comment_id AS toCommentId,
+            c.create_by AS createBy,
+            c.create_time AS createTime,
+            u_creator.nick_name AS username
+
+        FROM
+            rbb_comment c
+                LEFT JOIN
+            sys_user u_creator ON c.create_by = u_creator.id
+        WHERE
+            c.root_id = -1 -- 查询根评论
+            AND c.del_flag = 0 -- 确保评论未被删除
+            AND c.type = #{type} -- 确保评论类型为文章评论
+          <if test="type == 0">
+            AND c.article_id = #{articleId} -- 确保评论属于指定文章
+          </if>
+        ORDER BY
+            c.create_time
+    </select>
+
+    <select id="listChildComment" resultType="com.wybbb.rainbobit.pojo.vo.CommentVO">
+        SELECT
+            c.id AS id,
+            c.article_id AS articleId,
+            c.root_id AS rootId,
+            c.content AS content,
+            c.to_comment_user_id AS toCommentUserId,
+            u_parent.nick_name AS toCommentUserName,
+            c.to_comment_id AS toCommentId,
+            c.create_by AS createBy,
+            c.create_time AS createTime,
+            u_creator.nick_name AS username
+
+        FROM
+            rbb_comment c
+                LEFT JOIN
+            sys_user u_creator ON c.create_by = u_creator.id
+                LEFT JOIN
+            sys_user u_parent ON c.to_comment_user_id = u_parent.id -- 使用传入的 rootId 查询对应的父评论用户
+        WHERE
+                c.root_id = #{rootId} -- 查询指定根评论下的子评论
+                AND c.del_flag = 0 -- 确保评论未被删除
+        ORDER BY
+            c.create_time
+    </select>
+</mapper>
