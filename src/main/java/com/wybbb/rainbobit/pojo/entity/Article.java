@@ -73,5 +73,9 @@ public class Article implements Serializable {
      */
     private Integer delFlag;
 
+    public Article(Long key, Long value) {
+        this.id = key;
+        this.viewCount = value;
+    }
 }
 

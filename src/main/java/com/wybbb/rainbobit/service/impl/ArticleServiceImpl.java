@@ -8,6 +8,7 @@ import com.wybbb.rainbobit.common.constants.ArticleConstants;
 import com.wybbb.rainbobit.common.constants.CategoryConstants;
 import com.wybbb.rainbobit.common.constants.SystemConstants;
 import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
+import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.mapper.ArticleMapper;
 import com.wybbb.rainbobit.pojo.PageQuery;
 import com.wybbb.rainbobit.pojo.PageResult;
@@ -117,11 +118,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ArticleDetailVO articleDetail(Long id) {
         Article article = articleMapper.selectById(id);
-        if (Objects.isNull(article) ||
-                Integer.parseInt(article.getStatus()) != ArticleConstants.ARTICLE_STATUS_NORMAL ||
+        Long viewCount = redisCacheHelper.getCacheMapValue(
+                ArticleConstants.VIEW_COUNT_CACHE_KEY, id.toString(), Long.class);
+        article.setViewCount(viewCount);
+
+        if (Integer.parseInt(article.getStatus()) != ArticleConstants.ARTICLE_STATUS_NORMAL ||
                 article.getDelFlag() != ArticleConstants.ARTICLE_STATUS_NOT_DELETED
         ) {
-            return null;
+            throw new SystemException(ArticleConstants.ARTICLE_STATUS_ERROR);
         }
 
         ArticleDetailVO articleDetailVO = BeanUtil.copyProperties(article, ArticleDetailVO.class);
@@ -133,5 +137,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleDetailVO.setCategoryName(categoryName.toString());
 
         return articleDetailVO;
+    }
+
+    @Override
+    public void updateViewCount(Long id) {
+        redisCacheHelper.incrementCacheMapValue(ArticleConstants.VIEW_COUNT_CACHE_KEY, id.toString(), 1L);
     }
 }

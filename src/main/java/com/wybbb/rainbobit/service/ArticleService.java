@@ -24,4 +24,6 @@ public interface ArticleService extends IService<Article> {
     PageResult<ArticleListVO> articleList(Long categoryId, PageQuery pageQuery);
 
     ArticleDetailVO articleDetail(Long id);
+
+    void updateViewCount(Long id);
 }

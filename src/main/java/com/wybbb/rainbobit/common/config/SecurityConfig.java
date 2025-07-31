@@ -1,8 +1,5 @@
 package com.wybbb.rainbobit.common.config;
 
-import com.wybbb.rainbobit.common.filter.JwtAuthenticationFilter;
-import com.wybbb.rainbobit.service.impl.UserDetailServiceImpl;
-import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,20 +7,17 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.wybbb.rainbobit.common.filter.JwtAuthenticationFilter;
+
+import jakarta.annotation.Resource;
 
 @Configuration
 @EnableWebSecurity
@@ -78,6 +72,8 @@ public class SecurityConfig {
                         .requestMatchers("/login").anonymous()
                         //注销接口需要认证才能访问
                         .requestMatchers("/logout").authenticated()
+                        // Swagger UI和API文档路径允许所有人访问
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/api-docs/**").permitAll()
                         //个人信息接口必须登录后才能访问
                         .requestMatchers("/user/userInfo").authenticated()
                         .anyRequest().permitAll()

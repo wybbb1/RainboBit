@@ -2,15 +2,20 @@ package com.wybbb.rainbobit.pojo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
 
+@Schema(description = "响应结果包装类")
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseResult<T> implements Serializable {
+    @Schema(description = "状态码")
     private Integer code;
+    @Schema(description = "返回信息")
     private String msg;
+    @Schema(description = "返回数据")
     private T data;
 
     public ResponseResult() {

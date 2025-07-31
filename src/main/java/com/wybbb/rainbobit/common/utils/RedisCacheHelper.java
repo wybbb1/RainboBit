@@ -1,6 +1,7 @@
 package com.wybbb.rainbobit.common.utils;
 
 import cn.hutool.json.JSONUtil;
+import com.wybbb.rainbobit.common.constants.ArticleConstants;
 import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.exception.SystemException;
@@ -33,7 +34,7 @@ public class RedisCacheHelper {
                             entry -> convertKey(entry.getKey(), keyType),
                             // 修正点2：Value 的转换
                             // 如果 targetType 是 String，直接返回字符串；否则，进行 JSON 解析
-                            entry -> (V) convertValue(entry.getValue().toString(), valueType) // 强制类型转换到 V
+                            entry -> convertValue(entry.getValue().toString(), valueType)
                     ));
         }
 
@@ -77,6 +78,12 @@ public class RedisCacheHelper {
     private <T> T convertValue(String redisValue, Class<T> targetType) {
         if (redisValue == null) {
             return null;
+        }
+        if (targetType == Long.class || targetType == long.class) {
+            return targetType.cast(Long.parseLong(redisValue));
+        }
+        if (targetType == Integer.class || targetType == int.class) {
+            return targetType.cast(Integer.parseInt(redisValue));
         }
         if (targetType == String.class) {
             return targetType.cast(redisValue); // 如果目标类型是 String，直接返回
@@ -132,6 +139,7 @@ public class RedisCacheHelper {
             stringRedisTemplate.opsForValue().set(s, JSONUtil.toJsonStr(value));
         }else{
             log.error(UserConstants.CACHE_VALUE_NULL);
+            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
         }
     }
 
@@ -150,7 +158,42 @@ public class RedisCacheHelper {
             stringRedisTemplate.delete(s);
         } else {
             log.error(UserConstants.CACHE_VALUE_NULL);
-            throw new SystemException(AppHttpCodeEnum.SYSTEM_ERROR);
+            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
         }
+    }
+
+    public <T> T getCacheMapValue(String viewCountCacheKey, String string, Class<T> type) {
+        Object value = stringRedisTemplate.opsForHash().get(viewCountCacheKey, string);
+        if (value != null) {
+            return convertValue(value.toString(), type);
+        } else {
+            log.error(UserConstants.CACHE_VALUE_NULL);
+            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
+        }
+    }
+
+    public void setCacheMap(String key, Map<String, String> map) {
+        if (map != null && !map.isEmpty()) {
+            stringRedisTemplate.opsForHash().putAll(key, map);
+        } else {
+            log.error(UserConstants.CACHE_VALUE_NULL);
+            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
+        }
+    }
+
+    public void incrementCacheMapValue(String key,String hKey,long v){
+        stringRedisTemplate.opsForHash().increment(key,hKey,v);
+    }
+
+
+    public <K, V> Map<K, V> getCacheMap(String viewCountCacheKey, Class<K> type1, Class<V> type2) {
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(ArticleConstants.VIEW_COUNT_CACHE_KEY);
+
+        return entries.entrySet().stream().map(
+                entry -> Map.entry(
+                        convertKey(entry.getKey(), type1),
+                        convertValue(entry.getValue().toString(), type2)
+                )
+        ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

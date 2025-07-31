@@ -54,4 +54,18 @@ rainbobit:
     ttl: ${sky.jwt.ttl}
     token-name: ${sky.jwt.token-name}
 
+# SpringDoc配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.wybbb.rainbobit.controller
+
 
