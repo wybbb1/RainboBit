@@ -1,4 +1,4 @@
-package com.wybbb.rainbobit.controller;
+package com.wybbb.rainbobit.controller.blog;
 import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.pojo.vo.CategoryVO;
 import com.wybbb.rainbobit.service.CategoryService;
@@ -19,7 +19,7 @@ import java.util.List;
 @Tag(name = "文章分类", description = "文章分类相关接口")
 @RestController(value = "blogCategoryController")
 @RequestMapping("/category")
-public class CategoryController {
+public class BlogCategoryController {
 
     @Resource
     private CategoryService categoryService;

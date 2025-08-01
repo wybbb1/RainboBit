@@ -29,6 +29,10 @@ public class UserDetailServiceImpl implements UserDetailsService {
         queryWrapper.eq(User::getUserName, username);
         User user = userMapper.selectOne(queryWrapper);
 
+        if (user == null){
+            throw new UsernameNotFoundException(UserConstants.USER_NOT_EXIST);
+        }
+
         //TODO:查询权限信息
         return new LoginUser(user);
     }

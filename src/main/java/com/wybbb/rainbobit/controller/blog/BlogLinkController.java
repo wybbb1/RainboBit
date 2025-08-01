@@ -1,4 +1,4 @@
-package com.wybbb.rainbobit.controller;
+package com.wybbb.rainbobit.controller.blog;
 
 import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.service.LinkService;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "友情链接", description = "友情链接相关接口")
 @RestController
 @RequestMapping("/link")
-public class LinkController {
+public class BlogLinkController {
 
     @Resource
     private LinkService linkService;

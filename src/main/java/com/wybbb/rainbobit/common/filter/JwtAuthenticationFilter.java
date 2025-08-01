@@ -37,14 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // TODO 为什么login没有被SpringSecurity放行？
-        String requestURI = request.getRequestURI();
-
-        if (requestURI.endsWith("/login.html")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         // 获取请求头中的 JWT
         String jwt = request.getHeader("token");
         if (Objects.isNull(jwt) || jwt.isBlank()) {
@@ -65,8 +57,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String userId = claims.get(JwtClaimsConstant.BLOG_USER_ID).toString();
-        LoginUser loginUser = redisCacheHelper.getCacheObject(UserConstants.BLOG_USER_CACHE_KEY + userId, LoginUser.class);
+        String userId = claims.get(JwtClaimsConstant.USER_ID).toString();
+        LoginUser loginUser = redisCacheHelper.getCacheObject(UserConstants.USER_CACHE_KEY + userId, LoginUser.class);
         // 存入SecurityContext
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, null);
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);

@@ -1,4 +1,4 @@
-package com.wybbb.rainbobit.controller;
+package com.wybbb.rainbobit.controller.blog;
 
 import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.exception.SystemException;

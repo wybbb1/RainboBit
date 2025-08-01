@@ -1,8 +1,6 @@
-package com.wybbb.rainbobit.controller;
+package com.wybbb.rainbobit.controller.blog;
 
 import com.wybbb.rainbobit.common.constants.CommentConstant;
-import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
-import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.pojo.PageQuery;
 import com.wybbb.rainbobit.pojo.ResponseResult;
 import com.wybbb.rainbobit.pojo.entity.Comment;
@@ -13,12 +11,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
-import static com.baomidou.mybatisplus.extension.toolkit.Db.save;
-
 @Tag(name = "评论管理", description = "文章评论相关接口")
 @RestController
 @RequestMapping("/comment")
-public class CommentController {
+public class BlogCommentController {
 
     @Resource
     private CommentService commentService;

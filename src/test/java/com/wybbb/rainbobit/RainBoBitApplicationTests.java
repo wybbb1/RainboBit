@@ -1,17 +1,22 @@
 package com.wybbb.rainbobit;
 
 import com.wybbb.rainbobit.common.utils.R2OssUtil;
+import com.wybbb.rainbobit.pojo.entity.Menu;
+import com.wybbb.rainbobit.service.MenuService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
+import java.util.List;
 
 @SpringBootTest
 class RainBoBitApplicationTests {
 
     @Resource
     private R2OssUtil r2OssUtil;
+    @Resource
+    private MenuService menuService;
 
     @Test
     void uploadFileTest() throws InterruptedException {
@@ -24,5 +29,8 @@ class RainBoBitApplicationTests {
         r2OssUtil.delete(fileName);
         System.out.println("File deleted successfully.");
     }
+
+
+
 
 }

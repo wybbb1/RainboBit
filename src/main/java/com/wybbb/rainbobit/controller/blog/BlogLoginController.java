@@ -1,5 +1,6 @@
-package com.wybbb.rainbobit.controller;
+package com.wybbb.rainbobit.controller.blog;
 
+import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.pojo.ResponseResult;
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -38,7 +38,7 @@ public class BlogLoginController {
             throw new SystemException(AppHttpCodeEnum.REQUIRE_USERNAME);
         }
 
-        return ResponseResult.okResult(userService.login(userLoginDTO));
+        return ResponseResult.okResult(userService.login(UserConstants.USER_LOGIN, userLoginDTO));
     }
 
     @Operation(summary = "用户登出", description = "博客用户退出登录接口")

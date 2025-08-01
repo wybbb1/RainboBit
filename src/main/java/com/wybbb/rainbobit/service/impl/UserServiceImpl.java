@@ -14,32 +14,27 @@ import com.wybbb.rainbobit.common.utils.SecurityUtils;
 import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.mapper.UserMapper;
 import com.wybbb.rainbobit.pojo.dto.UserLoginDTO;
-import com.wybbb.rainbobit.pojo.entity.BlogUserLoginVo;
+import com.wybbb.rainbobit.pojo.entity.UserLoginVo;
 import com.wybbb.rainbobit.pojo.entity.LoginUser;
 import com.wybbb.rainbobit.pojo.entity.User;
+import com.wybbb.rainbobit.pojo.vo.AdminUserInfoVO;
 import com.wybbb.rainbobit.pojo.vo.UserInfoVO;
+import com.wybbb.rainbobit.service.MenuService;
+import com.wybbb.rainbobit.service.RoleService;
 import com.wybbb.rainbobit.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 用户表(SysUser)表服务实现类
@@ -59,9 +54,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private RedisCacheHelper redisCacheHelper;
     @Resource
     private R2OssUtil r2OssUtil;
+    @Resource
+    private MenuService menuService;
+    @Resource
+    private RoleService roleService;
 
     @Override
-    public BlogUserLoginVo login(UserLoginDTO userLoginDTO) {
+    public UserLoginVo login(Integer type, UserLoginDTO userLoginDTO) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getUserName(), userLoginDTO.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
@@ -70,11 +69,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         Long userId = loginUser.getUser().getId();
         Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.BLOG_USER_ID, userId);
-        claims.put(JwtClaimsConstant.BLOG_USER_NAME, loginUser.getUser().getUserName());
+        if (type == UserConstants.ADMIN_LOGIN){
+            claims.put(JwtClaimsConstant.USER_TYPE, UserConstants.ADMIN_LOGIN);
+        }
+        else if (type == UserConstants.USER_LOGIN){
+            claims.put(JwtClaimsConstant.USER_TYPE, UserConstants.USER_LOGIN);
+        }else{
+            throw new SystemException(UserConstants.LOGIN_TYPE_ERROR);
+        }
+
+        claims.put(JwtClaimsConstant.USER_ID, userId);
 
         // 将用户信息存入Redis
-        redisCacheHelper.setCacheObject(UserConstants.BLOG_USER_CACHE_KEY + userId.toString(), LoginUser.class, loginUser);
+        redisCacheHelper.setCacheObject(UserConstants.USER_CACHE_KEY + userId.toString(), LoginUser.class, loginUser);
 
         String token = JwtUtil.createJWT(
                 jwtProperties.getSecretKey(),
@@ -85,27 +92,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         UserInfoVO userInfoVo = new UserInfoVO();
         BeanUtils.copyProperties(loginUser.getUser(), userInfoVo);
 
-        return new BlogUserLoginVo(token, userInfoVo);
+        return new UserLoginVo(token, userInfoVo);
     }
 
     @Override
     public void logout() {
         // 获取当前用户的ID
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-        Long userId = loginUser.getUser().getId();
+        Long userId = SecurityUtils.getUserId();
 
         if (Objects.isNull(userId)) {
-            return;
+            throw new SystemException(UserConstants.USER_NEED_LOGIN);
         }
 
         // 从Redis中删除用户信息
-        redisCacheHelper.delCacheObject(UserConstants.BLOG_USER_CACHE_KEY + userId.toString());
+        redisCacheHelper.delCacheObject(UserConstants.USER_CACHE_KEY + userId.toString());
 
         // 清除SecurityContext中的认证信息
         SecurityContextHolder.clearContext();
-
-        return;
     }
 
     @Override
@@ -179,6 +182,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         save(user);
+    }
+
+    @Transactional
+    @Override
+    public AdminUserInfoVO adminGetInfo() {
+        // 获取当前登录用户信息
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        // 获取用户权限信息
+        List<String> perms = menuService.selectPermsByUserId(loginUser.getUser().getId());
+        // 获取用户角色信息
+        List<String> roles = roleService.selectRoleKeyByUserId(loginUser.getUser().getId());
+
+        return new AdminUserInfoVO(
+                perms,
+                roles,
+                BeanUtil.copyProperties(loginUser.getUser(), UserInfoVO.class)
+        );
     }
 
 

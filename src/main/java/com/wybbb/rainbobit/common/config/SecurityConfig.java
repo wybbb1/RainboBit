@@ -69,14 +69,10 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         // 对于登录接口 允许匿名访问
-                        .requestMatchers("/login").anonymous()
-                        //注销接口需要认证才能访问
-                        .requestMatchers("/logout").authenticated()
+                        .requestMatchers("/login", "/user/login").permitAll()
                         // Swagger UI和API文档路径允许所有人访问
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/api-docs/**").permitAll()
-                        //个人信息接口必须登录后才能访问
-                        .requestMatchers("/user/userInfo").authenticated()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 ).logout(AbstractHttpConfigurer::disable);
 
 

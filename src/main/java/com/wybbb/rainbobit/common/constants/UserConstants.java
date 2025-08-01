@@ -1,6 +1,7 @@
 package com.wybbb.rainbobit.common.constants;
 
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
+import com.wybbb.rainbobit.pojo.dto.UserLoginDTO;
 
 public class UserConstants {
 
@@ -8,7 +9,7 @@ public class UserConstants {
     public static final String USER_LOGIN_AUTH_ERROR = "用户名或密码错误";
 
     public static final String CACHE_VALUE_NULL = "尝试操作不存在的值";
-    public static final String BLOG_USER_CACHE_KEY = "rainbobit:user:cache:";
+    public static final String USER_CACHE_KEY = "rainbobit:user:cache:";
 
     public static final String USER_NEED_LOGIN = "用户未登录，请先登录";
 
@@ -21,4 +22,9 @@ public class UserConstants {
     public static final String EMAIL_IS_NULL = "邮箱不能为空";
     public static final String NICKNAME_IS_NULL = "昵称不能为空";
     public static final String USERNAME_ALREADY_EXISTS = "用户名已存在，请更换用户名";
+
+    public static final int ADMIN_LOGIN = 1;
+    public static final int USER_LOGIN = 0;
+    public static final String LOGIN_TYPE_ERROR = "登录异常";
+    public static final Long SUPER_ADMIN_ID = 1L;
 }

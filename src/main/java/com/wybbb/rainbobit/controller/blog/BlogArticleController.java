@@ -1,11 +1,10 @@
-package com.wybbb.rainbobit.controller;
+package com.wybbb.rainbobit.controller.blog;
 
 import com.wybbb.rainbobit.common.constants.ArticleConstants;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.pojo.PageQuery;
 import com.wybbb.rainbobit.pojo.ResponseResult;
-import com.wybbb.rainbobit.pojo.entity.Article;
 import com.wybbb.rainbobit.pojo.vo.ArticleDetailVO;
 import com.wybbb.rainbobit.pojo.vo.HotArticleVO;
 import com.wybbb.rainbobit.service.ArticleService;
@@ -21,7 +20,7 @@ import java.util.Objects;
 @Tag(name = "文章管理", description = "文章相关接口")
 @RestController
 @RequestMapping("/article")
-public class ArticleController {
+public class BlogArticleController {
 
     @Resource
     private ArticleService articleService;
