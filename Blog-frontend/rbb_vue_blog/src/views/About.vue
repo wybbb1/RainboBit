@@ -1,7 +1,7 @@
 <template>
   <div class="about-page">
     <!-- 背景图片容器 -->
-    <div class="background-container">
+    <div class="background-container" :class="{ 'background-loaded': backgroundLoaded }">
       <!-- 头像容器 -->
       <div class="avatar-container">
         <div class="avatar animate-fade-up">
@@ -51,6 +51,9 @@ import githubIcon from '@/assets/icon/github.svg'
 import csdnIcon from '@/assets/icon/csdn.svg'
 
 const router = useRouter()
+
+// 背景图片加载状态
+const backgroundLoaded = ref(false)
 
 // 联系方式信息
 const contactInfo = {
@@ -102,10 +105,12 @@ const openContact = (type: keyof typeof contactInfo) => {
 
 // 设置背景图片
 onMounted(() => {
-  const container = document.querySelector('.background-container') as HTMLElement
-  if (container && backgroundImage) {
-    container.style.backgroundImage = `url(${backgroundImage}), linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)`
+  // 预加载背景图片，用于触发动画
+  const img = new Image()
+  img.onload = () => {
+    backgroundLoaded.value = true
   }
+  img.src = backgroundImage
 })
 </script>
 
@@ -127,8 +132,8 @@ onMounted(() => {
   position: relative;
   height: 100%;
   width: 100%;
-  // 背景图片 - 使用import方式引入图片
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  // 直接设置背景图片和渐变，让浏览器自动预加载
+  background: url('@/assets/images/background.jpg');
   background-size: 104%; // 稍微放大背景图片，为动画留出空间
   background-position: center;
   background-repeat: no-repeat;
@@ -136,9 +141,13 @@ onMounted(() => {
   align-items: center;
   justify-content: flex-start;
   padding-left: 8%;
+  transition: all 0.3s ease-in-out;
 
-  // 添加背景图片的动画效果
-  animation: backgroundFloat 8s ease-in-out infinite;
+  // 背景图片加载完成后的样式
+  &.background-loaded {
+    // 添加背景图片的动画效果
+    animation: backgroundFloat 8s ease-in-out infinite;
+  }
 
   // // 添加一个半透明遮罩层
   // &::before {
