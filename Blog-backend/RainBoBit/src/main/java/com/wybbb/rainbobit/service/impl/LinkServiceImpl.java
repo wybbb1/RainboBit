@@ -40,6 +40,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
                 () -> {
                     List<Link> links = linkMapper.selectList(new LambdaQueryWrapper<Link>()
                             .eq(Link::getStatus, LinkConstants.LINK_STATUS_NORMAL)
+                            .eq(Link::getDelFlag, LinkConstants.LINK_NOT_DELETED)
                             .orderByAsc(Link::getCreateTime));
 
                     return BeanUtil.copyToList(links, LinkVO.class);
