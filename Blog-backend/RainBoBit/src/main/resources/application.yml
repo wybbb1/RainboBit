@@ -1,0 +1,84 @@
+server:
+  port: 7777
+
+spring:
+  application:
+    name: RainBoBit
+
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 5MB
+
+  data:
+    redis:
+      host: ${spring.redis.host}
+      port: ${spring.redis.port}
+      password: ${spring.redis.password}
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 1
+          time-between-eviction-runs: 10s
+      database: 1
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write_dates_as_timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+      # 启用 Long 转 String
+    generator:
+      write-numbers-as-strings: true
+
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# 由于mp默认采用雪花算法生成id，不需要这个功能，修改为主键自增
+  global-config:
+    db-config:
+      id-type: auto
+
+rainbobit:
+  oss:
+    endpoint: ${rainbobit.oss.endpoint}
+    access-key-id: ${rainbobit.oss.access-key-id}
+    access-key-secret: ${rainbobit.oss.access-key-secret}
+    bucket-name: ${rainbobit.oss.bucket-name}
+    domain: ${rainbobit.oss.domain}
+    region: ${rainbobit.oss.region}
+
+  jwt:
+    secret-key: ${sky.jwt.secret-key}
+    ttl: ${sky.jwt.ttl}
+    token-name: ${sky.jwt.token-name}
+
+
+# SpringDoc配置
+#springdoc:
+#  api-docs:
+#    enabled: true
+#    path: /api-docs
+#  swagger-ui:
+#    path: /swagger-ui.html
+#    tags-sorter: alpha
+#    operations-sorter: alpha
+#  group-configs:
+#    - group: 'default'
+#      paths-to-match: '/**'
+#      packages-to-scan: com.wybbb.rainbobit.controller
+
+
