@@ -1,0 +1,75 @@
+/* 通用加载样式 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  color: var(--text-color-secondary, #999);
+  font-size: 1.1rem;
+}
+
+.loading p {
+  margin: 0;
+}
+
+/* 加载动画 */
+.loading::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid var(--primary-color, #007bff);
+  border-radius: 50%;
+  animation: loading-spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 空状态样式 */
+.no-data, .no-articles, .not-found {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-color-secondary, #999);
+}
+
+.no-data h2, .no-articles h2, .not-found h1 {
+  color: var(--text-color, #333);
+  margin-bottom: 10px;
+}
+
+.no-data p, .no-articles p, .not-found p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.back-link {
+  display: inline-block;
+  padding: 10px 20px;
+  background: var(--primary-color, #007bff);
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.back-link:hover {
+  background: var(--primary-color-dark, #0056b3);
+  color: white;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .loading {
+    padding: 30px 15px;
+    font-size: 1rem;
+  }
+  
+  .no-data, .no-articles, .not-found {
+    padding: 40px 15px;
+  }
+}

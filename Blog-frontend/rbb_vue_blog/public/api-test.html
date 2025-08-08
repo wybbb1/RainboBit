@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>接口测试</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+    
+    .test-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+    }
+    
+    .test-section h3 {
+      margin-top: 0;
+      color: #555;
+    }
+    
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    
+    button:hover {
+      background: #0056b3;
+    }
+    
+    .result {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    
+    .loading {
+      color: #007bff;
+      font-style: italic;
+    }
+    
+    .error {
+      color: #dc3545;
+    }
+    
+    .success {
+      color: #28a745;
+    }
+    
+    .params {
+      margin: 10px 0;
+    }
+    
+    .params label {
+      display: inline-block;
+      width: 100px;
+      font-weight: bold;
+    }
+    
+    .params input {
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>文章接口测试页面</h1>
+    
+    <!-- 获取文章列表测试 -->
+    <div class="test-section">
+      <h3>📄 获取文章列表</h3>
+      <div class="params">
+        <label>页码:</label>
+        <input type="number" id="page" value="1" min="1">
+        
+        <label>每页数量:</label>
+        <input type="number" id="pageSize" value="10" min="1" max="1000">
+        
+        <label>状态:</label>
+        <input type="number" id="status" value="0" placeholder="0:已发布, 1:草稿">
+        
+        <label>分类ID:</label>
+        <input type="text" id="categoryId" placeholder="可选">
+      </div>
+      <button onclick="testGetArticleList()">🚀 测试获取文章列表</button>
+      <div id="articleListResult" class="result"></div>
+    </div>
+    
+    <!-- 获取文章详情测试 -->
+    <div class="test-section">
+      <h3>📖 获取文章详情</h3>
+      <div class="params">
+        <label>文章ID:</label>
+        <input type="text" id="articleId" value="1">
+      </div>
+      <button onclick="testGetArticleDetail()">🚀 测试获取文章详情</button>
+      <div id="articleDetailResult" class="result"></div>
+    </div>
+    
+    <!-- 更新浏览量测试 -->
+    <div class="test-section">
+      <h3>👁️ 更新文章浏览量</h3>
+      <div class="params">
+        <label>文章ID:</label>
+        <input type="text" id="viewCountId" value="1">
+      </div>
+      <button onclick="testUpdateViewCount()">🚀 测试更新浏览量</button>
+      <div id="viewCountResult" class="result"></div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟API配置
+    const API_BASE_URL = 'http://localhost:7777';
+    
+    // 通用请求函数
+    async function makeRequest(url, options = {}) {
+      const fullUrl = `${API_BASE_URL}${url}`;
+      console.log('请求URL:', fullUrl);
+      
+      try {
+        const response = await fetch(fullUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+            // 可以在这里添加认证头
+            // 'Authorization': 'Bearer ' + token
+          },
+          ...options
+        });
+        
+        const data = await response.json();
+        console.log('响应数据:', data);
+        return data;
+      } catch (error) {
+        console.error('请求失败:', error);
+        throw error;
+      }
+    }
+    
+    // 显示结果
+    function showResult(elementId, data, isError = false) {
+      const element = document.getElementById(elementId);
+      if (isError) {
+        element.className = 'result error';
+        element.textContent = `❌ 错误: ${data.message || data}`;
+      } else {
+        element.className = 'result success';
+        element.textContent = `✅ 成功:\n${JSON.stringify(data, null, 2)}`;
+      }
+    }
+    
+    // 显示加载状态
+    function showLoading(elementId) {
+      const element = document.getElementById(elementId);
+      element.className = 'result loading';
+      element.textContent = '⏳ 加载中...';
+    }
+    
+    // 测试获取文章列表
+    async function testGetArticleList() {
+      const resultId = 'articleListResult';
+      showLoading(resultId);
+      
+      try {
+        const page = document.getElementById('page').value || 1;
+        const pageSize = document.getElementById('pageSize').value || 10;
+        const status = document.getElementById('status').value || 0;
+        const categoryId = document.getElementById('categoryId').value;
+        
+        let params = new URLSearchParams({
+          page: page,
+          pageSize: pageSize,
+          status: status
+        });
+        
+        if (categoryId) {
+          params.append('categoryId', categoryId);
+        }
+        
+        const url = `/article/articleList?${params.toString()}`;
+        const data = await makeRequest(url);
+        
+        showResult(resultId, data);
+        
+        // 如果成功，显示一些统计信息
+        if (data.code === '200' || data.code === 200) {
+          const summary = {
+            total: data.data.total,
+            count: data.data.rows.length,
+            articles: data.data.rows.map(article => ({
+              id: article.id,
+              title: article.title,
+              category: article.categoryName,
+              viewCount: article.viewCount
+            }))
+          };
+          
+          setTimeout(() => {
+            const element = document.getElementById(resultId);
+            element.textContent = `✅ 成功获取文章列表:\n总数: ${summary.total}\n当前页数量: ${summary.count}\n\n详细数据:\n${JSON.stringify(data, null, 2)}`;
+          }, 100);
+        }
+        
+      } catch (error) {
+        showResult(resultId, error, true);
+      }
+    }
+    
+    // 测试获取文章详情
+    async function testGetArticleDetail() {
+      const resultId = 'articleDetailResult';
+      showLoading(resultId);
+      
+      try {
+        const articleId = document.getElementById('articleId').value;
+        if (!articleId) {
+          throw new Error('请输入文章ID');
+        }
+        
+        const url = `/article/${articleId}`;
+        const data = await makeRequest(url);
+        
+        showResult(resultId, data);
+        
+      } catch (error) {
+        showResult(resultId, error, true);
+      }
+    }
+    
+    // 测试更新浏览量
+    async function testUpdateViewCount() {
+      const resultId = 'viewCountResult';
+      showLoading(resultId);
+      
+      try {
+        const articleId = document.getElementById('viewCountId').value;
+        if (!articleId) {
+          throw new Error('请输入文章ID');
+        }
+        
+        const url = `/article/updateViewCount/${articleId}`;
+        const data = await makeRequest(url, {
+          method: 'PUT'
+        });
+        
+        showResult(resultId, data);
+        
+      } catch (error) {
+        showResult(resultId, error, true);
+      }
+    }
+    
+    // 页面加载完成后的初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 文章接口测试页面已加载');
+      console.log('API基础URL:', API_BASE_URL);
+      
+      // 可以在这里添加一些初始化逻辑
+      const articleListResult = document.getElementById('articleListResult');
+      articleListResult.textContent = '点击上方按钮开始测试接口...';
+      articleListResult.className = 'result';
+      
+      const articleDetailResult = document.getElementById('articleDetailResult');
+      articleDetailResult.textContent = '点击上方按钮开始测试接口...';
+      articleDetailResult.className = 'result';
+      
+      const viewCountResult = document.getElementById('viewCountResult');
+      viewCountResult.textContent = '点击上方按钮开始测试接口...';
+      viewCountResult.className = 'result';
+    });
+  </script>
+</body>
+</html>
