@@ -66,6 +66,17 @@ public class SecurityConfig {
         http
                 // 禁用 CSRF
                 .csrf(AbstractHttpConfigurer::disable)
+                // 配置CORS，确保Spring Security过滤器链也支持跨域
+               .cors(cors -> cors.configurationSource(request -> {
+                   var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                   corsConfig.setAllowedOriginPatterns(java.util.List.of("*"));
+                   corsConfig.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                   corsConfig.setAllowedHeaders(java.util.List.of("*"));
+                   corsConfig.setAllowCredentials(true);
+                   corsConfig.setExposedHeaders(java.util.List.of("*"));
+                   corsConfig.setMaxAge(3600L);
+                   return corsConfig;
+               }))
                 // 配置会话管理策略为无状态
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

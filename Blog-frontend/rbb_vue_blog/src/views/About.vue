@@ -150,17 +150,6 @@ onMounted(() => {
     animation: backgroundFloat 8s ease-in-out infinite;
   }
 
-  // // 添加一个半透明遮罩层
-  // &::before {
-  //   content: '';
-  //   position: absolute;
-  //   top: 0;
-  //   left: 0;
-  //   right: 0;
-  //   bottom: 0;
-  //   background: rgba(0, 0, 0, 0.3);
-  //   z-index: 1;
-  // }
 }
 
 .avatar-container {
@@ -175,8 +164,8 @@ onMounted(() => {
     border-radius: 50%;
     overflow: hidden;
     margin: 0 auto 30px;
-    border: 6px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 6px solid rgba(255, 255, 255, 1); // 改为完全不透明的白色边框
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 1);
     transition: transform 0.3s ease;
     
     &:hover {
@@ -188,6 +177,7 @@ onMounted(() => {
       height: 100%;
       object-fit: cover;
       display: block;
+      opacity: 1; // 确保头像图片完全不透明
     }
   }
   

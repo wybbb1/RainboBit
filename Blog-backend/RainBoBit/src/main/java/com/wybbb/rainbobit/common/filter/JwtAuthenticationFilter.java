@@ -46,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             claims = JwtUtil.parseJWT(jwtProperties.getSecretKey(), jwt);
         } catch (Exception e) {
-            e.printStackTrace();
             //token超时  token非法
             //响应告诉前端需要重新登录
             ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);

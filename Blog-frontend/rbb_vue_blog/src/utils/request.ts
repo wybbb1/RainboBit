@@ -67,8 +67,8 @@ service.interceptors.response.use(
       // JWT Token失效，清除本地认证信息
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
-      // 可以在这里处理登录跳转，但为了避免循环依赖，在组件中处理
-      // window.location.href = '/login'
+      // 跳转到登录页面
+      window.location.href = '/login'
     }
     
     console.error('业务错误:', errorMessage)
@@ -79,16 +79,23 @@ service.interceptors.response.use(
     
     if (error.response) {
       // 服务器响应错误
-      const { status } = error.response
+      const { status, data } = error.response
       
       // JWT认证失败的情况
       if (status === HTTP_STATUS.UNAUTHORIZED) {
         localStorage.removeItem('token')
         localStorage.removeItem('userInfo')
         message = ERROR_MESSAGES[HTTP_STATUS.UNAUTHORIZED]
+        // 跳转到登录页面
+        window.location.href = '/login'
       } else {
-        const errorMsg = ERROR_MESSAGES[status as keyof typeof ERROR_MESSAGES]
-        message = errorMsg || `连接错误${status}`
+        // 尝试从响应数据中获取错误信息
+        if (data && data.msg) {
+          message = data.msg
+        } else {
+          const errorMsg = ERROR_MESSAGES[status as keyof typeof ERROR_MESSAGES]
+          message = errorMsg || `连接错误${status}`
+        }
       }
     } else if (error.request) {
       // 请求超时或网络错误
