@@ -9,6 +9,9 @@ export { categoryApi, default as category } from './category'
 export { tagApi, default as tag } from './tag'
 export { commentApi, default as comment } from './comment'
 export { linkApi, default as link } from './link'
+export { authApi, default as auth } from './auth'
+export { uploadApi, default as upload } from './upload'
+export { userApi, default as user } from './user'
 
 // 导入工具类型和函数
 export type { 
@@ -24,6 +27,9 @@ import categoryApi from './category'
 import tagApi from './tag'
 import commentApi from './comment'
 import linkApi from './link'
+import authApi from './auth'
+import uploadApi from './upload'
+import userApi from './user'
 
 /**
  * 所有API的集合对象
@@ -31,13 +37,18 @@ import linkApi from './link'
  * import api from '@/api'
  * api.article.getArticleList(params)
  * api.category.getCategoryList()
+ * api.auth.login(loginData)
+ * api.user.updateProfile(userData)
  */
 export default {
   article: articleApi,
   category: categoryApi,
   tag: tagApi,
   comment: commentApi,
-  link: linkApi
+  link: linkApi,
+  auth: authApi,
+  upload: uploadApi,
+  user: userApi
 }
 
 /**

@@ -125,7 +125,7 @@ onMounted(() => {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  z-index: 1000; // 确保在其他元素之上
+  z-index: 999; // 设置为比Header更低的z-index，确保不会遮挡Header
 }
 
 .background-container {

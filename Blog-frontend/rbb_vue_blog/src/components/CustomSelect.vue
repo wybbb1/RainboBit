@@ -1,8 +1,10 @@
 <template>
   <div class="custom-select">
     <div class="select-trigger" @click="toggleDropdown" :class="{ active: dropdownOpen }">
-      <span class="select-value">{{ getOptionLabel(modelValue) }}</span>
-      <span class="select-arrow" :class="{ rotated: dropdownOpen }">▼</span>
+      <slot name="trigger" :selected-option="getSelectedOption()" :toggle-dropdown="toggleDropdown">
+        <span class="select-value">{{ getOptionLabel(modelValue) }}</span>
+        <span class="select-arrow" :class="{ rotated: dropdownOpen }">▼</span>
+      </slot>
     </div>
     <div class="select-dropdown" v-show="dropdownOpen">
       <div 
@@ -63,6 +65,11 @@ const selectOption = (value: string | number) => {
 const getOptionLabel = (value: string | number) => {
   const option = props.options.find(opt => opt.value === value)
   return option?.label || props.placeholder
+}
+
+// 获取选中的选项对象
+const getSelectedOption = () => {
+  return props.options.find(opt => opt.value === props.modelValue)
 }
 
 // 点击外部关闭下拉菜单

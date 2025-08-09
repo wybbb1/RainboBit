@@ -16,6 +16,33 @@ export interface Article {
   categoryId: number | string;
   /** 分类名称 */
   categoryName: string;
+  /** 标签/**
+ * 文件上传响应
+ */
+}
+
+export interface UploadResponse {
+  /** 响应码 */
+  code: string;
+  /** 响应消息 */
+  msg: string;
+  /** 文件URL */
+  data: string;
+}
+
+export interface Article {
+  /** 文章ID */
+  id: number | string;
+  /** 标题 */
+  title: string;
+  /** 文章内容 */
+  content: string;
+  /** 文章摘要 */
+  summary?: string;
+  /** 所属分类id */
+  categoryId: number | string;
+  /** 分类名称 */
+  categoryName: string;
   /** 标签ID列表 */
   tagIds: number[];
   /** 缩略图 */
@@ -272,4 +299,52 @@ export interface User {
   updateTime: string;
   /** 删除标志（0代表未删除，1代表已删除） */
   delFlag: number;
+}
+
+/**
+ * 用户登录DTO
+ */
+export interface UserLoginDTO {
+  /** 用户名 */
+  userName: string;
+  /** 密码 */
+  password: string;
+}
+
+/**
+ * 用户注册DTO
+ */
+export interface UserRegisterDTO {
+  /** 用户名 */
+  userName: string;
+  /** 昵称 */
+  nickName: string;
+  /** 密码 */
+  password: string;
+  /** 邮箱 */
+  email: string;
+  /** 手机号 */
+  phonenumber?: string;
+  /** 用户性别（0男，1女，2未知） */
+  sex?: string;
+}
+
+/**
+ * 登录响应数据
+ */
+export interface LoginResponse {
+  /** 访问令牌 */
+  token: string;
+}
+
+/**
+ * 上传文件响应
+ */
+export interface UploadResponse {
+  /** 响应码 */
+  code: string;
+  /** 响应消息 */
+  msg: string;
+  /** 文件URL */
+  data: string;
 }

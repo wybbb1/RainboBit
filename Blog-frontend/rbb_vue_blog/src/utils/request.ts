@@ -39,7 +39,7 @@ service.interceptors.request.use(
     // 可以在这里添加token等认证信息
     const token = localStorage.getItem('token')
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers.token = token
     }
     
     return config
@@ -64,8 +64,11 @@ service.interceptors.response.use(
     let errorMessage = msg || ERROR_MESSAGES.DEFAULT
     if (code === BUSINESS_CODE.NEED_LOGIN) {
       errorMessage = ERROR_MESSAGES[HTTP_STATUS.UNAUTHORIZED]
-      // 可以在这里处理登录跳转
-      // router.push('/login')
+      // JWT Token失效，清除本地认证信息
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+      // 可以在这里处理登录跳转，但为了避免循环依赖，在组件中处理
+      // window.location.href = '/login'
     }
     
     console.error('业务错误:', errorMessage)
@@ -77,8 +80,16 @@ service.interceptors.response.use(
     if (error.response) {
       // 服务器响应错误
       const { status } = error.response
-      const errorMsg = ERROR_MESSAGES[status as keyof typeof ERROR_MESSAGES]
-      message = errorMsg || `连接错误${status}`
+      
+      // JWT认证失败的情况
+      if (status === HTTP_STATUS.UNAUTHORIZED) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('userInfo')
+        message = ERROR_MESSAGES[HTTP_STATUS.UNAUTHORIZED]
+      } else {
+        const errorMsg = ERROR_MESSAGES[status as keyof typeof ERROR_MESSAGES]
+        message = errorMsg || `连接错误${status}`
+      }
     } else if (error.request) {
       // 请求超时或网络错误
       if (error.code === 'ECONNABORTED') {
