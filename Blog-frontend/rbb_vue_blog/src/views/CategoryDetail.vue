@@ -91,7 +91,7 @@ const sortOptions = [
 ];
 
 // 获取当前分类
-const categoryId = computed(() => Number(route.params.id));
+const categoryId = computed(() => route.params.id as string);
 
 // 获取子分类
 const subcategories = computed(() => {
@@ -132,7 +132,7 @@ const getCategoryArticleCount = (categoryId: number) => {
 };
 
 // 加载分类详情
-const loadCategory = async (id: number) => {
+const loadCategory = async (id: number | string) => {
   try {
     const categoryData = await categoryApi.getCategoryDetail(id);
     category.value = categoryData;
@@ -143,7 +143,7 @@ const loadCategory = async (id: number) => {
 };
 
 // 加载分类下的文章
-const loadCategoryArticles = async (categoryId: number) => {
+const loadCategoryArticles = async (categoryId: number | string) => {
   try {
     const response = await articleApi.getArticleList({
       page: 1,

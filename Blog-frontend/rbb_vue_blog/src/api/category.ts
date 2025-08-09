@@ -16,7 +16,7 @@ export const categoryApi = {
    * 根据ID获取分类详情
    * @param id 分类ID
    */
-  getCategoryDetail(id: number): Promise<Category> {
+  getCategoryDetail(id: number | string): Promise<Category> {
     return request.get(`/category/${id}`)
   },
 

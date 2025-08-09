@@ -53,12 +53,52 @@ import { tagApi } from '@/api/tag';
 import type { Article, Tag } from '@/types';
 import Comments from '@/components/Comments.vue';
 import { marked } from 'marked';
+import hljs from 'highlight.js';
 import '@/assets/styles/highlight.scss';
 
 const route = useRoute();
 const article = ref<Article | null>(null);
 const tags = ref<Tag[]>([]);
 const loading = ref(false);
+
+// 配置 marked 的渲染器和代码高亮
+const renderer = new marked.Renderer();
+
+// 自定义代码块渲染 - 使用新版本 marked 的 API
+renderer.code = function({ text, lang }: { text: string; lang?: string }) {
+  let highlightedCode: string;
+  
+  if (lang && hljs.getLanguage(lang)) {
+    try {
+      highlightedCode = hljs.highlight(text, { language: lang }).value;
+    } catch (err) {
+      console.error('Code highlighting error:', err);
+      highlightedCode = text;
+    }
+  } else {
+    try {
+      highlightedCode = hljs.highlightAuto(text).value;
+    } catch (err) {
+      console.error('Auto highlighting error:', err);
+      highlightedCode = text;
+    }
+  }
+  
+  const langClass = lang ? ` class="language-${lang}"` : '';
+  return `<pre><code class="hljs"${langClass}>${highlightedCode}</code></pre>`;
+};
+
+// 自定义内联代码渲染
+renderer.codespan = function({ text }: { text: string }) {
+  return `<code class="inline-code">${text}</code>`;
+};
+
+// 配置 marked 选项
+marked.setOptions({
+  renderer: renderer,
+  gfm: true,
+  breaks: true
+});
 
 const renderedContent = computed(() => {
   if (article.value) {
@@ -79,7 +119,7 @@ const getArticleTags = (articleId: number | string): Tag[] => {
 };
 
 // 加载文章详情
-const loadArticle = async (id: number) => {
+const loadArticle = async (id: number | string) => {
   try {
     loading.value = true;
     const articleData = await articleApi.getArticleDetail(id);
@@ -121,15 +161,7 @@ const formatDate = (dateString: string) => {
 };
 
 onMounted(async () => {
-  const articleId = Number(route.params.id);
-  
-  // 配置 marked 的渲染器
-  const renderer = new marked.Renderer();
-  marked.setOptions({
-    renderer: renderer,
-    gfm: true,
-    breaks: true
-  });
+  const articleId = route.params.id as string;
 
   // 并行加载数据
   await Promise.all([
@@ -257,10 +289,34 @@ onMounted(async () => {
 
   :deep(pre) {
     margin-bottom: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    background: #282c34 !important;
+
+    code {
+      padding: 16px;
+      display: block;
+      line-height: 1.5;
+      font-size: 0.9rem;
+      
+      @media (max-width: 768px) {
+        font-size: 0.8rem;
+        padding: 12px;
+      }
+    }
   }
 
   :deep(code) {
     font-family: $font-family-monospace;
+    
+    &.inline-code {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: #e06c75;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
   }
 
   // 图片样式限制

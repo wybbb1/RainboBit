@@ -26,9 +26,9 @@
               浏览: {{ article.viewCount }}
             </span>
             <span class="separator">|</span>
-            <div class="tags" v-if="getArticleTags(Number(article.id)).length > 0">
+            <div class="tags" v-if="getArticleTags(article.id).length > 0">
               <router-link 
-                v-for="tag in getArticleTags(Number(article.id))" 
+                v-for="tag in getArticleTags(article.id)" 
                 :key="tag.id" 
                 :to="`/tags/${tag.name}`"
                 class="tag-link"
@@ -69,9 +69,9 @@ const pageSize = ref(5);
 const total = ref(0);
 
 // 获取文章标签
-const getArticleTags = (articleId: number): Tag[] => {
+const getArticleTags = (articleId: number | string): Tag[] => {
   // 根据文章ID找到对应的文章
-  const article = articles.value.find(a => Number(a.id) === articleId);
+  const article = articles.value.find(a => a.id.toString() === articleId.toString());
   if (!article || !article.tagIds || article.tagIds.length === 0) {
     return [];
   }

@@ -252,7 +252,7 @@ const totalPages = ref(0)
 const expandedComments = ref<Set<number | string>>(new Set()) // 跟踪哪些评论的子评论是展开的
 
 // 计算属性
-const articleId = computed(() => Number(route.params.id))
+const articleId = computed(() => route.params.id as string)
 
 // 使用后端返回的总评论数，而不是当前页的评论数
 const allCommentsCount = computed(() => totalComments.value)

@@ -72,7 +72,7 @@ export interface Article {
  */
 export interface Category {
   /** 分类ID */
-  id: number;
+  id: number | string;
   /** 分类名 */
   name: string;
   /** 父分类id，如果没有父分类为-1 */
@@ -248,7 +248,7 @@ export interface Role {
  */
 export interface Tag {
   /** 标签ID */
-  id: number;
+  id: number | string;
   /** 标签名 */
   name: string;
   /** 创建人ID */

@@ -127,6 +127,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Article article = articleMapper.selectById(id);
         Long viewCount = redisCacheHelper.getCacheMapValue(
                 ArticleConstants.VIEW_COUNT_CACHE_KEY, id.toString(), Long.class);
+        if (Objects.isNull(viewCount)) {
+            // 如果缓存中没有浏览量，则从数据库获取
+            viewCount = article.getViewCount();
+            Map<String, String> viewCountMap = new HashMap<>();
+            viewCountMap.put(id.toString(), viewCount.toString());
+            // 同时更新缓存
+            redisCacheHelper.setCacheMap(ArticleConstants.VIEW_COUNT_CACHE_KEY, viewCountMap);
+        }
         article.setViewCount(viewCount);
 
         if (article.getDelFlag() != ArticleConstants.ARTICLE_STATUS_NOT_DELETED) {

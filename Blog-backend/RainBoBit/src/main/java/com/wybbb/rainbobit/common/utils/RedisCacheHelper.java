@@ -162,14 +162,12 @@ public class RedisCacheHelper {
         }
     }
 
-    public <T> T getCacheMapValue(String viewCountCacheKey, String string, Class<T> type) {
-        Object value = stringRedisTemplate.opsForHash().get(viewCountCacheKey, string);
+    public <T> T getCacheMapValue(String viewCountCacheKey, String id, Class<T> type) {
+        Object value = stringRedisTemplate.opsForHash().get(viewCountCacheKey, id);
         if (value != null) {
             return convertValue(value.toString(), type);
-        } else {
-            log.error(UserConstants.CACHE_VALUE_NULL);
-            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
         }
+        return null;
     }
 
     public void setCacheMap(String key, Map<String, String> map) {

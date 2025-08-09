@@ -39,9 +39,6 @@ spring:
       write_dates_as_timestamps: false
     deserialization:
       fail-on-unknown-properties: false
-      # 启用 Long 转 String
-    generator:
-      write-numbers-as-strings: true
 
   mail: #  QQ 邮箱 SMTP 配置
     host: ${email.SMTP_HOST}

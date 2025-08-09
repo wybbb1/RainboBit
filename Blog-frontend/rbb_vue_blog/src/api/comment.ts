@@ -10,7 +10,7 @@ export const commentApi = {
    * @param articleId 文章ID
    * @param params 分页参数
    */
-  getCommentList(articleId: number, params: PageQuery): Promise<PageResult<Comment>> {
+  getCommentList(articleId: number | string, params: PageQuery): Promise<PageResult<Comment>> {
     return request.get('/comment/commentList', { articleId, ...params })
   },
 
