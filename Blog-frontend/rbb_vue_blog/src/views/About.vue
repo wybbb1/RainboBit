@@ -125,7 +125,7 @@ onMounted(() => {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  z-index: 999; // 设置为比Header更低的z-index，确保不会遮挡Header
+  z-index: 100; // 降低z-index，避免与其他元素冲突
 }
 
 .background-container {
@@ -134,9 +134,10 @@ onMounted(() => {
   width: 100%;
   // 直接设置背景图片和渐变，让浏览器自动预加载
   background: url('@/assets/images/background.jpg');
-  background-size: 104%; // 稍微放大背景图片，为动画留出空间
+  background-size: cover; // 使用cover确保背景图片完全覆盖容器
   background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed; // 固定背景，避免滚动时的问题
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -145,7 +146,7 @@ onMounted(() => {
 
   // 背景图片加载完成后的样式
   &.background-loaded {
-    // 添加背景图片的动画效果
+    // 添加背景图片的轻微浮动效果，不改变尺寸
     animation: backgroundFloat 8s ease-in-out infinite;
   }
 
@@ -295,55 +296,55 @@ onMounted(() => {
   
   // 邮箱按钮 - 柔和蓝色 + 弹跳效果
   &.email-button {
-    background: rgba(99, 179, 237, 0.8);
-    border: 2px solid rgba(99, 179, 237, 0.9);
+    background: #63b3ed; // 改为不透明
+    border: 2px solid #63b3ed;
     
     &:hover {
-      background: #63b3ed;
+      background: #4299e1; // 悬停时稍微深一点
       transform: translateY(-12px) scale(1.08);
       box-shadow: 0 20px 40px rgba(99, 179, 237, 0.5);
-      border-color: #63b3ed;
+      border-color: #4299e1;
       animation: bounce 0.6s ease;
     }
   }
 
   // 微信按钮 - 柔和薄荷绿 + 摇摆效果
   &.wechat-button {
-    background: rgba(72, 187, 120, 0.8);
-    border: 2px solid rgba(72, 187, 120, 0.9);
+    background: #48bb78; // 改为不透明
+    border: 2px solid #48bb78;
     
     &:hover {
-      background: #48bb78;
+      background: #38a169; // 悬停时稍微深一点
       transform: translateY(-8px) scale(1.05) rotate(-2deg);
       box-shadow: 0 15px 35px rgba(72, 187, 120, 0.5);
-      border-color: #48bb78;
+      border-color: #38a169;
       animation: wiggle 0.5s ease;
     }
   }
   
   // GitHub按钮 - 柔和紫色 + 平滑缩放效果
   &.github-button {
-    background: rgba(159, 122, 234, 0.8);
-    border: 2px solid rgba(159, 122, 234, 0.9);
+    background: #9f7aea; // 改为不透明
+    border: 2px solid #9f7aea;
     
     &:hover {
-      background: #9f7aea;
+      background: #805ad5; // 悬停时稍微深一点
       transform: translateY(-10px) scale(1.08);
       box-shadow: 0 18px 40px rgba(159, 122, 234, 0.5);
-      border-color: #9f7aea;
+      border-color: #805ad5;
     }
   }
 
   // CSDN按钮 - 柔和珊瑚色 + 旋转效果
   &.csdn-button {
-    background: rgba(251, 146, 60, 0.8);
-    border: 2px solid rgba(251, 146, 60, 0.9);
+    background: #fb923c; // 改为不透明
+    border: 2px solid #fb923c;
     
     &:hover {
-      background: #fb923c;
+      background: #ed8936; // 悬停时稍微深一点
       transform: translateY(-8px) scale(1.05) rotate(8deg);
       box-shadow: 0 15px 35px rgba(251, 146, 60, 0.5);
-      border-color: #fb923c;
+      border-color: #ed8936;
       animation: spin-gentle 1s ease;
     }
   }
@@ -359,35 +360,81 @@ onMounted(() => {
   }
 }
 
-// 背景图片动画 - 轻微的缩放和位移
+// 背景图片动画 - 只改变位置，不改变尺寸
 @keyframes backgroundFloat {
   0% {
-    background-size: 104%;
     background-position: 50% 50%;
     transform: translateX(0px) translateY(0px);
   }
   20% {
-    background-size: 105%;
     background-position: 48% 52%;
     transform: translateX(3px) translateY(-2px);
   }
   40% {
-    background-size: 106%;
     background-position: 52% 48%;
     transform: translateX(-2px) translateY(3px);
   }
   60% {
-    background-size: 103%;
     background-position: 49% 53%;
     transform: translateX(4px) translateY(1px);
   }
   80% {
-    background-size: 104.5%;
     background-position: 51% 47%;
     transform: translateX(-3px) translateY(-2px);
   }
   100% {
-    background-size: 104%;
+    background-position: 50% 50%;
+    transform: translateX(0px) translateY(0px);
+  }
+}
+
+// 移动端背景动画 - 减少晃动幅度
+@keyframes backgroundFloatMobile {
+  0% {
+    background-position: 50% 50%;
+    transform: translateX(0px) translateY(0px);
+  }
+  20% {
+    background-position: 49% 51%;
+    transform: translateX(1px) translateY(-1px);
+  }
+  40% {
+    background-position: 51% 49%;
+    transform: translateX(-1px) translateY(1px);
+  }
+  60% {
+    background-position: 49.5% 51.5%;
+    transform: translateX(1.5px) translateY(0.5px);
+  }
+  80% {
+    background-position: 50.5% 48.5%;
+    transform: translateX(-1px) translateY(-0.5px);
+  }
+  100% {
+    background-position: 50% 50%;
+    transform: translateX(0px) translateY(0px);
+  }
+}
+
+// 小屏幕背景动画 - 最小晃动幅度
+@keyframes backgroundFloatSmall {
+  0% {
+    background-position: 50% 50%;
+    transform: translateX(0px) translateY(0px);
+  }
+  25% {
+    background-position: 49.5% 50.5%;
+    transform: translateX(0.5px) translateY(-0.5px);
+  }
+  50% {
+    background-position: 50.5% 49.5%;
+    transform: translateX(-0.5px) translateY(0.5px);
+  }
+  75% {
+    background-position: 49.5% 50.5%;
+    transform: translateX(0.5px) translateY(0px);
+  }
+  100% {
     background-position: 50% 50%;
     transform: translateX(0px) translateY(0px);
   }
@@ -443,6 +490,11 @@ onMounted(() => {
   .background-container {
     padding-left: 4%;
     justify-content: center;
+    
+    // 在小屏幕上减少背景动画幅度
+    &.background-loaded {
+      animation: backgroundFloatMobile 8s ease-in-out infinite;
+    }
   }
   
   .avatar-container {
@@ -477,6 +529,13 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
+  .background-container {
+    // 在超小屏幕上进一步减少动画幅度
+    &.background-loaded {
+      animation: backgroundFloatSmall 8s ease-in-out infinite;
+    }
+  }
+  
   .avatar-container {
     .avatar {
       width: 120px;
