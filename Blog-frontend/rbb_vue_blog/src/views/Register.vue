@@ -68,6 +68,28 @@
         </div>
         
         <div class="form-group">
+          <label for="code">验证码:</label>
+          <div class="code-input-group">
+            <input
+              id="code"
+              v-model="registerForm.code"
+              type="text"
+              required
+              placeholder="请输入邮箱验证码"
+              :disabled="loading"
+            />
+            <button
+              type="button"
+              class="send-code-btn"
+              :disabled="loading || countdown > 0 || !registerForm.email.trim()"
+              @click="sendVerificationCode"
+            >
+              {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
+            </button>
+          </div>
+        </div>
+        
+        <div class="form-group">
           <label for="phonenumber">手机号:</label>
           <input
             id="phonenumber"
@@ -117,19 +139,21 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import type { UserRegisterDTO } from '@/types'
+import { authApi } from '@/api/auth'
+import type { RegisterUserForm } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 // 表单数据
-const registerForm = reactive<UserRegisterDTO>({
+const registerForm = reactive<RegisterUserForm>({
   userName: '',
   nickName: '',
   password: '',
   email: '',
   phonenumber: '',
-  sex: '2' // 默认保密
+  sex: '2', // 默认保密
+  code: ''
 })
 
 // 确认密码
@@ -139,6 +163,52 @@ const confirmPassword = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+// 验证码倒计时
+const countdown = ref(0)
+let countdownTimer: number | null = null
+
+/**
+ * 发送验证码
+ */
+const sendVerificationCode = async () => {
+  if (!registerForm.email.trim()) {
+    errorMessage.value = '请先输入邮箱地址'
+    return
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(registerForm.email)) {
+    errorMessage.value = '请输入有效的邮箱地址'
+    return
+  }
+
+  try {
+    errorMessage.value = ''
+    loading.value = true
+    
+    await authApi.sendEmailCode(registerForm.email)
+    
+    successMessage.value = '验证码已发送到您的邮箱'
+    
+    // 开始倒计时
+    countdown.value = 60
+    countdownTimer = window.setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        if (countdownTimer) {
+          clearInterval(countdownTimer)
+          countdownTimer = null
+        }
+      }
+    }, 1000)
+    
+  } catch (error: any) {
+    errorMessage.value = error.message || '发送验证码失败，请重试'
+  } finally {
+    loading.value = false
+  }
+}
 
 /**
  * 验证表单数据
@@ -180,6 +250,11 @@ const validateForm = (): boolean => {
     return false
   }
   
+  if (!registerForm.code.trim()) {
+    errorMessage.value = '请输入邮箱验证码'
+    return false
+  }
+  
   return true
 }
 
@@ -197,8 +272,15 @@ const handleRegister = async () => {
   loading.value = true
 
   try {
-    await userStore.register(registerForm)
+    // 使用新的注册接口
+    await authApi.register(registerForm)
     successMessage.value = '注册成功！即将跳转到登录页面...'
+    
+    // 清理倒计时器
+    if (countdownTimer) {
+      clearInterval(countdownTimer)
+      countdownTimer = null
+    }
     
     // 延迟跳转到登录页
     setTimeout(() => {
@@ -266,6 +348,37 @@ const handleRegister = async () => {
 .form-group input:disabled,
 .form-group select:disabled {
   background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.code-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.code-input-group input {
+  flex: 1;
+}
+
+.send-code-btn {
+  padding: 12px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.send-code-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.send-code-btn:disabled {
+  background-color: #ccc;
   cursor: not-allowed;
 }
 

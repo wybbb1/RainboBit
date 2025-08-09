@@ -312,7 +312,29 @@ export interface UserLoginDTO {
 }
 
 /**
- * 用户注册DTO
+ * 用户注册表单 - 对应后端 RegisterUserForm
+ */
+export interface RegisterUserForm {
+  /** 用户ID */
+  id?: number;
+  /** 用户名 */
+  userName: string;
+  /** 昵称 */
+  nickName: string;
+  /** 密码 */
+  password: string;
+  /** 邮箱 */
+  email: string;
+  /** 手机号 */
+  phonenumber?: string;
+  /** 用户性别（0男，1女，2未知） */
+  sex?: string;
+  /** 邮箱验证码 */
+  code: string;
+}
+
+/**
+ * 用户注册DTO (保留用于兼容)
  */
 export interface UserRegisterDTO {
   /** 用户名 */

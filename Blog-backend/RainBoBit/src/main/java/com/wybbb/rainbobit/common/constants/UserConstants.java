@@ -33,4 +33,8 @@ public class UserConstants {
     public static final String User_ID_IS_NULL = "用户ID不能为空";
     public static final String USER_NOT_DELETED = "0";
     public static final String USER_NORMAL = "0";
+    public static final String EMAIL_ALREADY_SENT = "验证码已发送，请稍后再试";
+    public static final String EMAIL_FORMAT_ERROR = "邮箱格式错误，请输入正确的邮箱地址";
+    public static final String LOGIN_CODE_KEY = "rainbobit:user:login:code:";
+    public static final String CODE_ERROR = "验证码错误";
 }

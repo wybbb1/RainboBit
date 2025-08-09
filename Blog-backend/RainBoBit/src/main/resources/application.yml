@@ -43,6 +43,19 @@ spring:
     generator:
       write-numbers-as-strings: true
 
+  mail: #  QQ 邮箱 SMTP 配置
+    host: ${email.SMTP_HOST}
+    port: ${email.SMTP_PORT}
+    username: ${email.SENDER_EMAIL}
+    password: ${email.SENDER_PASSWORD}
+    properties: # SSL/TLS 配置
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            trust: ${email.SMTP_HOST}
+
 
 mybatis-plus:
   configuration:

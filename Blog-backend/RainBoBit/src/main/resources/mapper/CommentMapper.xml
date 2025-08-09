@@ -27,7 +27,7 @@
             AND c.article_id = #{articleId} -- 确保评论属于指定文章
           </if>
         ORDER BY
-            c.create_time
+            c.create_time desc
     </select>
 
     <select id="listChildComment" resultType="com.wybbb.rainbobit.pojo.vo.CommentVO">

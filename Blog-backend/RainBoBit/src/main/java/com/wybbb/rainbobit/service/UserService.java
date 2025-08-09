@@ -1,12 +1,14 @@
 package com.wybbb.rainbobit.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wybbb.rainbobit.pojo.dto.RegisterUserForm;
 import com.wybbb.rainbobit.pojo.dto.UserDTO;
 import com.wybbb.rainbobit.pojo.dto.UserLoginDTO;
 import com.wybbb.rainbobit.pojo.other.PageResult;
 import com.wybbb.rainbobit.pojo.vo.*;
 import com.wybbb.rainbobit.pojo.entity.User;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,7 +32,7 @@ public interface UserService extends IService<User> {
 
     void updateUserInfo(User user);
 
-    void register(User user);
+    void register(RegisterUserForm user);
 
     AdminUserInfoVO adminGetInfo();
 
@@ -43,5 +45,7 @@ public interface UserService extends IService<User> {
     UserUpdateVO getUser(Long id);
 
     void update(UserDTO userDTO);
+
+    void sendCode(String email);
 }
 

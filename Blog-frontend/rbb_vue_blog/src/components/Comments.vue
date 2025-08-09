@@ -39,9 +39,10 @@
                 class="reply-btn" 
                 @click="toggleReply(comment.id)"
                 :class="{ active: replyingTo === comment.id }"
+                :title="userStore.isLoggedIn ? '回复这条评论' : '需要登录后才能回复'"
               >
                 <span class="reply-icon">↩️</span>
-                回复
+                {{ userStore.isLoggedIn ? '回复' : '登录后回复' }}
               </button>
               <button 
                 v-if="comment.children && comment.children.length > 0"
@@ -117,9 +118,10 @@
                   class="reply-btn" 
                   @click="toggleReply(childComment.id, comment.id)"
                   :class="{ active: replyingTo === childComment.id }"
+                  :title="userStore.isLoggedIn ? '回复这条评论' : '需要登录后才能回复'"
                 >
                   <span class="reply-icon">↩️</span>
-                  回复
+                  {{ userStore.isLoggedIn ? '回复' : '登录后回复' }}
                 </button>
               </div>
               
@@ -173,27 +175,45 @@
       <h4 class="form-title">
         发表评论
       </h4>
-      <div class="textarea-wrapper">
-        <textarea 
-          v-model="newCommentContent"
-          placeholder="分享你的想法..."
-          rows="4"
-          class="comment-textarea"
-          maxlength="500"
-        ></textarea>
-        <div class="char-count" :class="{ 'limit-warning': newCommentContent.length > 450 }">
-          {{ newCommentContent.length }}/500
-        </div>
+      
+      <!-- 未登录提示 -->
+      <div v-if="!userStore.isLoggedIn" class="login-prompt">
+        <p class="login-message">
+          <span class="login-icon">🔒</span>
+          需要登录后才能发表评论
+          <router-link 
+            :to="`/login?redirect=${encodeURIComponent(route.fullPath)}`" 
+            class="login-link"
+          >
+            立即登录
+          </router-link>
+        </p>
       </div>
-      <div class="form-actions">
-        <button 
-          class="btn btn-primary" 
-          @click="submitComment"
-          :disabled="!newCommentContent.trim() || submitting || newCommentContent.length < 2"
-        >
-          <span v-if="submitting" class="loading-dot"></span>
-          {{ submitting ? '提交中...' : '发布评论' }}
-        </button>
+      
+      <!-- 登录用户的评论表单 -->
+      <div v-else>
+        <div class="textarea-wrapper">
+          <textarea 
+            v-model="newCommentContent"
+            placeholder="分享你的想法..."
+            rows="4"
+            class="comment-textarea"
+            maxlength="500"
+          ></textarea>
+          <div class="char-count" :class="{ 'limit-warning': newCommentContent.length > 450 }">
+            {{ newCommentContent.length }}/500
+          </div>
+        </div>
+        <div class="form-actions">
+          <button 
+            class="btn btn-primary" 
+            @click="submitComment"
+            :disabled="!newCommentContent.trim() || submitting || newCommentContent.length < 2"
+          >
+            <span v-if="submitting" class="loading-dot"></span>
+            {{ submitting ? '提交中...' : '发布评论' }}
+          </button>
+        </div>
       </div>
     </div>
     
@@ -207,12 +227,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { commentApi } from '@/api/comment'
+import { useUserStore } from '@/stores/user'
 import type { Comment } from '@/types'
 import PageForm from './PageForm.vue'
 
 const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 
 // 响应式数据
 const comments = ref<Comment[]>([])
@@ -231,17 +254,8 @@ const expandedComments = ref<Set<number | string>>(new Set()) // 跟踪哪些评
 // 计算属性
 const articleId = computed(() => Number(route.params.id))
 
-// 计算所有评论总数（包括子评论）
-const allCommentsCount = computed(() => {
-  let count = 0
-  comments.value.forEach(comment => {
-    count++ // 根评论
-    if (comment.children) {
-      count += comment.children.length // 子评论
-    }
-  })
-  return count
-})
+// 使用后端返回的总评论数，而不是当前页的评论数
+const allCommentsCount = computed(() => totalComments.value)
 
 // 格式化日期
 const formatDate = (dateString: string) => {
@@ -306,6 +320,14 @@ const retryLoad = () => {
 
 // 提交评论
 const submitComment = async () => {
+  // 检查用户是否已登录
+  if (!userStore.isLoggedIn) {
+    // 未登录，跳转到登录页面，并保存当前页面路径用于登录后回跳
+    const currentPath = route.fullPath
+    await router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+    return
+  }
+
   if (!newCommentContent.value.trim()) {
     alert('请输入评论内容')
     return
@@ -326,7 +348,7 @@ const submitComment = async () => {
     await commentApi.addComment({
       articleId: articleId.value,
       content: newCommentContent.value.trim(),
-      rootId: 0
+      rootId: -1
     })
     
     newCommentContent.value = ''
@@ -347,7 +369,15 @@ const submitComment = async () => {
 }
 
 // 切换回复状态
-const toggleReply = (commentId: number | string, rootId?: number | string) => {
+const toggleReply = async (commentId: number | string, rootId?: number | string) => {
+  // 检查用户是否已登录
+  if (!userStore.isLoggedIn) {
+    // 未登录，跳转到登录页面，并保存当前页面路径用于登录后回跳
+    const currentPath = route.fullPath
+    await router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+    return
+  }
+
   if (replyingTo.value === commentId) {
     cancelReply()
   } else {
@@ -378,6 +408,14 @@ const isExpanded = (commentId: number | string) => {
 
 // 提交对根评论的回复
 const submitReply = async (parentComment: Comment) => {
+  // 检查用户是否已登录
+  if (!userStore.isLoggedIn) {
+    // 未登录，跳转到登录页面，并保存当前页面路径用于登录后回跳
+    const currentPath = route.fullPath
+    await router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+    return
+  }
+
   if (!replyContent.value.trim()) {
     alert('请输入回复内容')
     return
@@ -420,6 +458,14 @@ const submitReply = async (parentComment: Comment) => {
 
 // 提交对子评论的回复
 const submitChildReply = async (childComment: Comment, rootComment: Comment) => {
+  // 检查用户是否已登录
+  if (!userStore.isLoggedIn) {
+    // 未登录，跳转到登录页面，并保存当前页面路径用于登录后回跳
+    const currentPath = route.fullPath
+    await router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+    return
+  }
+
   if (!replyContent.value.trim()) {
     alert('请输入回复内容')
     return
@@ -903,6 +949,45 @@ onMounted(() => {
 
     &:hover:not(:disabled) {
       background: rgba($primary-color, 0.1);
+    }
+  }
+}
+
+// 登录提示样式
+.login-prompt {
+  text-align: center;
+  padding: 24px;
+  background: rgba($primary-color, 0.05);
+  border: 1px solid rgba($primary-color, 0.2);
+  border-radius: 8px;
+  margin-bottom: 16px;
+
+  .login-message {
+    color: $text-color-secondary;
+    font-size: 0.95rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .login-icon {
+      font-size: 1.1rem;
+    }
+
+    .login-link {
+      color: $primary-color;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba($primary-color, 0.1);
+        text-decoration: underline;
+      }
     }
   }
 }

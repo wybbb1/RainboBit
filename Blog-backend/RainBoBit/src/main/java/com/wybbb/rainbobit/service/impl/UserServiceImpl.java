@@ -1,6 +1,7 @@
 package com.wybbb.rainbobit.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,13 +11,11 @@ import com.wybbb.rainbobit.common.constants.RoleConstants;
 import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.common.prop.JwtProperties;
-import com.wybbb.rainbobit.common.utils.JwtUtil;
-import com.wybbb.rainbobit.common.utils.R2OssUtil;
-import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
-import com.wybbb.rainbobit.common.utils.SecurityUtils;
+import com.wybbb.rainbobit.common.utils.*;
 import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.mapper.RoleMapper;
 import com.wybbb.rainbobit.mapper.UserMapper;
+import com.wybbb.rainbobit.pojo.dto.RegisterUserForm;
 import com.wybbb.rainbobit.pojo.dto.UserDTO;
 import com.wybbb.rainbobit.pojo.dto.UserLoginDTO;
 import com.wybbb.rainbobit.pojo.entity.Article;
@@ -30,9 +29,11 @@ import com.wybbb.rainbobit.service.MenuService;
 import com.wybbb.rainbobit.service.RoleService;
 import com.wybbb.rainbobit.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +65,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private RedisCacheHelper redisCacheHelper;
     @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
     private R2OssUtil r2OssUtil;
     @Resource
     private MenuService menuService;
@@ -74,6 +78,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private PasswordEncoder passwordEncoder;
     @Autowired
     private RoleMapper roleMapper;
+    @Resource
+    private EmailSender emailSender;
 
     @Override
     public UserLoginVo login(Integer type, UserLoginDTO userLoginDTO) {
@@ -174,8 +180,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public void register(User user) {
-        //TODO:可以更新为邮箱注册
+    public void register(RegisterUserForm user) {
+        String email = user.getEmail();
+        String key = UserConstants.LOGIN_CODE_KEY + email;
+
         if (user.getUserName() == null || user.getUserName().isBlank()){
             throw new SystemException(UserConstants.USERNAME_IS_NULL);
         }
@@ -189,15 +197,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new SystemException(UserConstants.NICKNAME_IS_NULL);
         }
 
+        String cacheCode = stringRedisTemplate.opsForValue().get(key);
+
+        String code = user.getCode();
+        if (cacheCode == null || !cacheCode.equals(code)) {
+            throw new SystemException(UserConstants.CODE_ERROR);
+        }
+
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserName, user.getUserName());
+        queryWrapper.eq(User::getUserName, user.getUserName())
+                .eq(User::getEmail, user.getEmail());
         User existingUser = getOne(queryWrapper);
         if (existingUser != null) {
             throw new SystemException(UserConstants.USERNAME_ALREADY_EXISTS);
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        save(user);
+
+        User saveUser = BeanUtil.copyProperties(user, User.class);
+        save(saveUser);
     }
 
     @Transactional
@@ -332,6 +350,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!roleIds.isEmpty()){
             roleMapper.saveRolesByUserId(id, roleIds);
         }
+    }
+
+    @Override
+    public void sendCode(String email) {
+        if (stringRedisTemplate.hasKey(email)) {
+            // 如果缓存中已存在验证码，抛出异常
+            throw new SystemException(UserConstants.EMAIL_ALREADY_SENT);
+        }
+
+        if (RegexUtils.isEmailInvalid(email)) {
+            // 如果邮箱格式不正确，抛出异常
+            throw new SystemException(UserConstants.EMAIL_FORMAT_ERROR);
+        }
+
+        String code = RandomUtil.randomNumbers(6);
+
+        // 将验证码存入缓存
+        stringRedisTemplate.opsForValue().set(UserConstants.LOGIN_CODE_KEY + email, code, 60*5, TimeUnit.SECONDS);
+
+        // 发送验证码
+        emailSender.sendVerificationCodeEmail(email, code);
+        log.debug("发送验证码到邮箱: {}, 验证码: {}", email, code);
     }
 
 

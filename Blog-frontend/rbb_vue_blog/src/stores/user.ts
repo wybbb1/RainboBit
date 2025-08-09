@@ -6,7 +6,7 @@
 import { ref, computed, readonly } from 'vue'
 import { defineStore } from 'pinia'
 import { authApi } from '@/api'
-import type { User, LoginUser, UserLoginDTO, UserRegisterDTO } from '@/types'
+import type { User, LoginUser, UserLoginDTO, UserRegisterDTO, RegisterUserForm } from '@/types'
 
 export const useUserStore = defineStore('user', () => {
   // 状态
@@ -112,9 +112,16 @@ export const useUserStore = defineStore('user', () => {
   /**
    * 用户注册
    */
-  const register = async (registerData: UserRegisterDTO): Promise<void> => {
+  const register = async (registerData: UserRegisterDTO | RegisterUserForm): Promise<void> => {
     try {
-      await authApi.register(registerData)
+      // 根据数据类型选择不同的注册接口
+      if ('code' in registerData) {
+        // 新的带验证码的注册
+        await authApi.register(registerData as RegisterUserForm)
+      } else {
+        // 兼容旧的注册方式
+        await authApi.registerLegacy(registerData as UserRegisterDTO)
+      }
     } catch (error) {
       console.error('注册失败:', error)
       throw error

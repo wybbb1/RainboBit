@@ -6,7 +6,8 @@
 import { request } from '@/utils/request'
 import type { 
   UserLoginDTO, 
-  UserRegisterDTO, 
+  UserRegisterDTO,
+  RegisterUserForm,
   LoginResponse, 
   User
 } from '@/types'
@@ -21,11 +22,29 @@ export const login = (loginData: UserLoginDTO): Promise<LoginResponse> => {
 }
 
 /**
- * 用户注册
+ * 发送邮箱验证码
+ * @param email 邮箱地址
+ * @returns 发送结果
+ */
+export const sendEmailCode = (email: string): Promise<any> => {
+  return request.post(`/user/code?email=${encodeURIComponent(email)}`)
+}
+
+/**
+ * 用户注册 - 新版本
+ * @param registerData 注册表单数据
+ * @returns 注册响应
+ */
+export const register = (registerData: RegisterUserForm): Promise<any> => {
+  return request.post('/user/register', registerData)
+}
+
+/**
+ * 用户注册 - 兼容旧版本
  * @param registerData 注册信息
  * @returns 注册响应
  */
-export const register = (registerData: UserRegisterDTO): Promise<any> => {
+export const registerLegacy = (registerData: UserRegisterDTO): Promise<any> => {
   return request.post('/user/register', registerData)
 }
 
@@ -52,6 +71,8 @@ export const getCurrentUser = (): Promise<User> => {
 export const authApi = {
   login,
   register,
+  registerLegacy,
+  sendEmailCode,
   logout,
   getCurrentUser
 }
