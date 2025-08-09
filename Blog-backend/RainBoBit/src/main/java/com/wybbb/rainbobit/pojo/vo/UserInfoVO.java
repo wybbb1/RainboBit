@@ -16,6 +16,8 @@ public class UserInfoVO {
      */
     private String nickName;
 
+    private String userName;
+
     /**
      * 头像
      */

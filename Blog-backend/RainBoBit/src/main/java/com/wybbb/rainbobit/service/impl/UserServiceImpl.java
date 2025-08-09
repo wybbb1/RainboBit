@@ -170,7 +170,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void updateUserInfo(User user) {
-        //TODO:或许存在安全问题，因为是直接传的用户id
         updateById(user);
     }
 
@@ -197,6 +196,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new SystemException(UserConstants.USERNAME_ALREADY_EXISTS);
         }
 
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         save(user);
     }
 
