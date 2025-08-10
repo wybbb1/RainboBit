@@ -22,5 +22,15 @@ public interface LinkService extends IService<Link> {
     PageResult<LinkVO> getLinkList(PageQuery pageQuery, String name, String status);
 
     void delete(Long id);
+
+    PageResult<LinkVO> listDeletedLinks(PageQuery pageQuery, String name, String url);
+
+    void restoreLink(Long id);
+
+    void permanentDeleteLink(Long id);
+
+    void batchRestoreLinks(java.util.List<Long> ids);
+
+    void batchPermanentDeleteLinks(java.util.List<Long> ids);
 }
 

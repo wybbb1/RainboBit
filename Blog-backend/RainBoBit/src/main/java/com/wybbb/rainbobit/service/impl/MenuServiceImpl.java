@@ -152,15 +152,24 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Transactional
     @Override
     public void saveMenu(Menu menu) {
-        Menu parentMenu = getById(menu.getParentId());
-        String pType = parentMenu.getMenuType();
-        String type = menu.getMenuType();
-        if ((pType.equals(MenuConstants.MENU_TYPE_MENU) && type.equals(MenuConstants.MENU_TYPE_BUTTON))
-        || pType.equals(MenuConstants.MENU_TYPE_DIR) && (type.equals(MenuConstants.MENU_TYPE_MENU) || type.equals(MenuConstants.MENU_TYPE_DIR))) {
-            save(menu);
+        if (menu.getParentId() == 0L) {
+            if (menu.getMenuType().equals(MenuConstants.MENU_TYPE_BUTTON)) {
+                throw new SystemException(MenuConstants.MENU_TYPE_MISMATCH);
+            }else{
+                save(menu);
+            }
         }else{
-            throw new SystemException(MenuConstants.MENU_TYPE_MISMATCH);
+            Menu parentMenu = getById(menu.getParentId());
+            String pType = parentMenu.getMenuType();
+            String type = menu.getMenuType();
+            if ((pType.equals(MenuConstants.MENU_TYPE_MENU) && type.equals(MenuConstants.MENU_TYPE_BUTTON))
+                    || pType.equals(MenuConstants.MENU_TYPE_DIR) && (type.equals(MenuConstants.MENU_TYPE_MENU) || type.equals(MenuConstants.MENU_TYPE_DIR))) {
+                save(menu);
+            }else{
+                throw new SystemException(MenuConstants.MENU_TYPE_MISMATCH);
+            }
         }
+
     }
 
     private List<Menu> selectMenusByUserId(Long userId){

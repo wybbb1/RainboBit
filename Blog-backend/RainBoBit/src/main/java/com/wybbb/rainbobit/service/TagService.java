@@ -29,6 +29,5 @@ public interface TagService extends IService<Tag> {
     List<TagVO> listAllTags();
 
     void removeTagById(Long id);
-
 }
 

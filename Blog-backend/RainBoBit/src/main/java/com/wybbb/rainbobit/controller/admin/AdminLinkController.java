@@ -2,7 +2,6 @@ package com.wybbb.rainbobit.controller.admin;
 
 import com.wybbb.rainbobit.pojo.entity.Link;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
-import com.wybbb.rainbobit.pojo.other.PageResult;
 import com.wybbb.rainbobit.pojo.other.ResponseResult;
 import com.wybbb.rainbobit.service.LinkService;
 import io.swagger.v3.oas.annotations.Operation;

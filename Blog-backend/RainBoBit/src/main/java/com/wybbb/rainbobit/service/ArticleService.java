@@ -34,4 +34,14 @@ public interface ArticleService extends IService<Article> {
     void update(ArticleDetail articleDetail);
 
     void delete(Long id);
+
+    PageResult<ArticleListVO> listDeletedArticles(PageQuery pageQuery, String title, String summary);
+
+    void restoreArticle(Long id);
+
+    void permanentDeleteArticle(Long id);
+
+    void batchRestoreArticles(java.util.List<Long> ids);
+
+    void batchPermanentDeleteArticles(java.util.List<Long> ids);
 }

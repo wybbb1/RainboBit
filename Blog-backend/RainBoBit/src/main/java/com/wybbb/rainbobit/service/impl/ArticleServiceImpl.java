@@ -11,7 +11,6 @@ import com.wybbb.rainbobit.common.utils.SecurityUtils;
 import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.mapper.ArticleMapper;
 import com.wybbb.rainbobit.mapper.TagMapper;
-import com.wybbb.rainbobit.pojo.entity.Tag;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
 import com.wybbb.rainbobit.pojo.other.PageResult;
 import com.wybbb.rainbobit.pojo.dto.ArticleDTO;
@@ -221,5 +220,94 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         update(updateWrapper);
         /*// 删除文章标签
         tagMapper.deleteByArticleId(id);*/
+    }
+
+    @Override
+    public PageResult<ArticleListVO> listDeletedArticles(PageQuery pageQuery, String title, String summary) {
+        LambdaQueryWrapper<Article> articleQueryWrapper = new LambdaQueryWrapper<>();
+        articleQueryWrapper
+                .eq(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_DELETED) // 0表示未删除状态
+                .orderByDesc(Article::getIsTop) // 先按照置顶状态降序
+                .orderByDesc(Article::getCreateTime); // 再按照创建时间降序
+
+        Page<Article> articlePage = new Page<>(pageQuery.getPage(), pageQuery.getPageSize());
+        page(articlePage, articleQueryWrapper);
+
+        // 获取所有分类信息
+        Map<Long, String> finalEntries = redisCacheHelper.getMap(
+                CategoryConstants.CATEGORY_CACHE_KEY,
+                Long.class,
+                String.class,
+                () -> {
+                    // 如果缓存中不存在，从数据库查询
+                    LambdaQueryWrapper<Category> categoryQueryWrapper = new LambdaQueryWrapper<>();
+                    categoryQueryWrapper.eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED)
+                            .gt(Category::getRefer_cnt, CategoryConstants.CATEGORY_NO_REFERENCE);
+                    List<Category> categories = categoryService.list(categoryQueryWrapper);
+
+                    // 将查询结果转换为VO对象
+                    List<CategoryVO> categoryVOs = BeanUtil.copyToList(categories, CategoryVO.class);
+
+                    return categoryVOs.stream()
+                            .collect(Collectors.toMap(
+                                    CategoryVO::getId,
+                                    CategoryVO::getName,
+                                    (existing, replacement) -> existing));// 如果有重复键，保留第一个
+                });
+
+        if (finalEntries.isEmpty()) {
+            throw new RuntimeException(SystemConstants.RUNTIME_ERROR);
+        }
+        // 将分类信息转换为Map
+        List<ArticleListVO> articleListVOS = BeanUtil.copyToList(articlePage.getRecords(), ArticleListVO.class);
+        // 遍历文章列表，设置分类名称和标签id信息
+        articleListVOS.forEach(articleListVO -> {
+            articleListVO.setCategoryName(finalEntries.get(articleListVO.getCategoryId()));
+            articleListVO.setTagIds(tagMapper.getTagsBatch(articleListVO.getId()));
+        });
+
+
+        return new PageResult<>(articlePage.getTotal(), articleListVOS);
+    }
+
+    @Override
+    public void restoreArticle(Long id) {
+        // 恢复文章（逻辑删除标记改为未删除）
+        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED)
+                .eq(Article::getId, id);
+        update(updateWrapper);
+    }
+
+    @Override
+    public void permanentDeleteArticle(Long id) {
+        // 永久删除文章（物理删除）
+        removeById(id);
+        // 删除文章标签关联
+        tagMapper.deleteByArticleId(id);
+    }
+
+    @Override
+    public void batchRestoreArticles(java.util.List<Long> ids) {
+        // 批量恢复文章
+        if (ids != null && !ids.isEmpty()) {
+            LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.set(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED)
+                    .in(Article::getId, ids);
+            update(updateWrapper);
+        }
+    }
+
+    @Override
+    public void batchPermanentDeleteArticles(java.util.List<Long> ids) {
+        // 批量永久删除文章
+        if (ids != null && !ids.isEmpty()) {
+            // 批量物理删除文章
+            removeByIds(ids);
+            // 批量删除文章标签关联
+            for (Long id : ids) {
+                tagMapper.deleteByArticleId(id);
+            }
+        }
     }
 }
