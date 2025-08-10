@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wybbb.rainbobit.common.constants.CategoryConstants;
@@ -25,8 +24,8 @@ import com.wybbb.rainbobit.pojo.vo.ExcelCategoryVO;
 import com.wybbb.rainbobit.service.CategoryService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -96,8 +95,69 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
                     .doWrite(data);
         } catch (Exception e) {
             response.reset();
-            ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.SYSTEM_ERROR);
+            ResponseResult<?> result = ResponseResult.errorResult(AppHttpCodeEnum.SYSTEM_ERROR);
             WebUtils.renderString(response, JSON.toJSONString(result));
+        }
+    }
+
+    @Override
+    public void importCategory(MultipartFile file) {
+        try {
+            // 校验文件是否为空
+            if (file.isEmpty()) {
+                throw new SystemException("导入文件不能为空");
+            }
+
+            // 读取Excel文件
+            List<ExcelCategoryVO> excelCategoryVOList = EasyExcel.read(file.getInputStream())
+                    .head(ExcelCategoryVO.class)
+                    .sheet()
+                    .doReadSync();
+
+            if (excelCategoryVOList.isEmpty()) {
+                throw new SystemException("导入文件内容为空");
+            }
+
+            // 转换为Category实体
+            List<Category> categories = BeanUtil.copyToList(excelCategoryVOList, Category.class);
+            
+            // 获取现有的分类名称，避免重复导入
+            List<String> existingNames = list(new LambdaQueryWrapper<Category>()
+                    .eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED))
+                    .stream()
+                    .map(Category::getName)
+                    .toList();
+            
+            // 过滤掉已存在的分类名称和无效数据
+            List<Category> categoriesToSave = categories.stream()
+                    .filter(category -> category.getName() != null && !category.getName().trim().isEmpty())
+                    .filter(category -> !existingNames.contains(category.getName()))
+                    .collect(Collectors.toList());
+            
+            // 批量保存新分类
+            if (!categoriesToSave.isEmpty()) {
+                // 设置默认值
+                categoriesToSave.forEach(category -> {
+                    if (category.getStatus() == null) {
+                        category.setStatus("0"); // 设置默认状态为正常
+                    }
+                    if (category.getDescription() == null) {
+                        category.setDescription("");
+                    }
+                    category.setDelFlag(CategoryConstants.CATEGORY_NOT_DELETED);
+                    category.setRefer_cnt(0); // 设置初始引用计数为0
+                });
+                
+                saveBatch(categoriesToSave);
+                
+                // 清除分类缓存，让缓存重新加载
+                redisCacheHelper.deleteMap(CategoryConstants.CATEGORY_CACHE_KEY);
+            }
+            
+        } catch (SystemException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new SystemException("导入分类失败：" + e.getMessage());
         }
     }
 
@@ -130,16 +190,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     }
 
     @Override
-    public void delete(Long id) {
-        LambdaUpdateWrapper<Category> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(Category::getDelFlag, CategoryConstants.CATEGORY_DELETED)
-                .eq(Category::getId, id)
-                .eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED);
-
-        update(updateWrapper);
-    }
-
-    @Override
     public CategoryVO getCategoryById(Long id) {
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Category::getId, id)
@@ -149,76 +199,27 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         return BeanUtil.copyProperties(category, CategoryVO.class);
     }
 
-    /*@Override
-    public List<CategoryVO> listCategory() {
-        // 从缓存中获取分类列表
-        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(CategoryConstants.CATEGORY_CACHE_KEY);
-        if (!entries.isEmpty()) {
-            // 如果缓存中存在，直接返回
-            List<CategoryVO> categoryList = entries.entrySet().stream()
-                    .map(entry -> new CategoryVO(
-                            Long.valueOf(entry.getKey().toString()),
-                            entry.getValue().toString()))
-                    .toList();
-
-            return categoryList;
-        }
-
-        // 如果缓存中不存在，从数据库查询
+    @Override
+    public void updateCategory(CategoryDTO categoryDTO) {
+        Category category = BeanUtil.copyProperties(categoryDTO, Category.class);
+        
+        // 检查分类名称是否已存在（排除当前分类）
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED)
-                .gt(Category::getRefer_cnt, CategoryConstants.CATEGORY_NO_REFERENCE);
-        List<Category> categories = list(queryWrapper);
-
-        // 将查询结果转换为VO对象
-        List<CategoryVO> categoryVOs = BeanUtil.copyToList(categories, CategoryVO.class);
-
-        // 将结果存入缓存
-        Map<String, String> categoryCacheMap = categoryVOs.stream()
-                .collect(Collectors.toMap(
-                        categoryVO -> String.valueOf(categoryVO.getId()),
-                        CategoryVO::getName,
-                        (existing, replacement) -> existing)); // 如果有重复键，保留第一个
-
-        stringRedisTemplate.opsForHash().putAll(CategoryConstants.CATEGORY_CACHE_KEY, categoryCacheMap);
-        return categoryVOs;
-    }*/
-
-    // 使用Hash存储分类列表到Redis缓存来代替Set
-    /*@Override
-    public ResponseResult<List<CategoryVO>> listCategory() {
-        // 从缓存中获取分类列表
-        Set<String> categorySet = stringRedisTemplate.opsForSet().members(CategoryConstants.CATEGORY_LIST_KEY);
-        if (categorySet != null && !categorySet.isEmpty()) {
-            // 如果缓存中存在，直接返回
-            List<CategoryVO> categoryList = categorySet.stream()
-                    .map(StringUtils::categoryCacheOut)
-                    .filter(parsedResult -> !"-1".equals(parsedResult[0]))
-                    .map(parsedResult -> new CategoryVO(Long.valueOf(parsedResult[0]), parsedResult[1]))
-                    .collect(Collectors.toList());
-
-            return ResponseResult.okResult(categoryList);
+        queryWrapper.eq(Category::getName, category.getName())
+                .ne(Category::getId, category.getId())
+                .eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED);
+        
+        if (categoryMapper.exists(queryWrapper)) {
+            throw new SystemException(CategoryConstants.NAME_IS_EXIST);
         }
+        
+        updateById(category);
+    }
 
-        // 如果缓存中不存在，从数据库查询
-        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED)
-                .gt(Category::getRefer_cnt, CategoryConstants.CATEGORY_NO_REFERENCE);
-        List<Category> categories = list(queryWrapper);
-
-        // 将查询结果转换为VO对象
-        List<CategoryVO> categoryVOs = BeanUtil.copyToList(categories, CategoryVO.class);
-
-        // 将结果存入缓存
-        List<String> categoryCacheList = categoryVOs.stream()
-                .map(StringUtils::categoryCacheIn)
-                .filter(Objects::nonNull)
-                .toList();
-
-        stringRedisTemplate.opsForSet().add(CategoryConstants.CATEGORY_LIST_KEY, categoryCacheList.toArray(new String[0]));
-
-        return ResponseResult.okResult(categoryVOs);
-    }*/
-
+    @Override
+    public void delete(Long id) {
+        // 逻辑删除分类
+        removeById(id);
+    }
 }
 

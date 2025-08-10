@@ -51,28 +51,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Resource
     private CategoryService categoryService;
 
-    @Override
-    public List<HotArticleVO> hotAricleList() {
-
-        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Article::getStatus, ArticleConstants.ARTICLE_STATUS_NORMAL) // 0表示正常状态
-                .eq(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED)
-                .orderByDesc(Article::getViewCount); // 按照浏览量降序
-
-        Page<Article> page = new Page<>(1, ArticleConstants.HOT_ARTICLES_SHOW_PER_PAGE);
-        page(page, queryWrapper);
-
-        List<Article> articles = page.getRecords();
-        if (articles.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return BeanUtil.copyToList(articles, HotArticleVO.class);
-    }
-
     @Transactional
     @Override
-    public PageResult<ArticleListVO> articleList(Long categoryId, PageQuery pageQuery) {
+    public PageResult<ArticleListVO> page(Long categoryId, PageQuery pageQuery) {
 
         LambdaQueryWrapper<Article> articleQueryWrapper = new LambdaQueryWrapper<>();
         articleQueryWrapper.eq(Article::getStatus, ArticleConstants.ARTICLE_STATUS_NORMAL) // 0表示正常状态
@@ -175,7 +156,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public PageResult<Article> listArticle(PageQuery pageQuery, String title, String summary) {
+    public PageResult<Article> adminPage(PageQuery pageQuery, String title, String summary) {
         Long id = SecurityUtils.getUserId();
 
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
@@ -263,7 +244,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 遍历文章列表，设置分类名称和标签id信息
         articleListVOS.forEach(articleListVO -> {
             articleListVO.setCategoryName(finalEntries.get(articleListVO.getCategoryId()));
-            articleListVO.setTagIds(tagMapper.getTagsBatch(articleListVO.getId()));
         });
 
 

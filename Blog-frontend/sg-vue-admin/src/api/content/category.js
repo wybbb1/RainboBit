@@ -58,3 +58,17 @@ export function exportCategory() {
     method: 'get'
   })
 }
+
+// 导入分类
+export function importCategory(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({
+    url: '/content/category/import',
+    method: 'post',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}

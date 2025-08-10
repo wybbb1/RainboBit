@@ -24,6 +24,7 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
+          v-hasPermission="['content:category:add']"
           type="primary"
           plain
           icon="el-icon-plus"
@@ -34,6 +35,7 @@
 
       <el-col :span="1.5">
         <el-button
+          v-hasPermission="['content:category:remove']"
           type="danger"
           plain
           icon="el-icon-delete"
@@ -53,6 +55,17 @@
           @click="handleExport"
         >导出</el-button>
       </el-col>
+      
+      <el-col :span="1.5">
+        <el-button
+          v-hasPermission="['content:category:import']"
+          type="info"
+          plain
+          icon="el-icon-upload2"
+          size="mini"
+          @click="handleImport"
+        >导入</el-button>
+      </el-col>
     </el-row>
 
     <el-table v-loading="loading" :data="categoryList" @selection-change="handleSelectionChange">
@@ -63,22 +76,28 @@
       <el-table-column prop="status" label="状态" align="center">
         <template slot-scope="scope">
           <el-switch
+            v-hasPermission="['content:category:edit']"
             v-model="scope.row.status"
             active-value="0"
             inactive-value="1"
             @change="handleStatusChange(scope.row)"
           />
+          <span v-if="!checkPermission(['content:category:edit'])">
+            {{ scope.row.status === '0' ? '正常' : '禁用' }}
+          </span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
+            v-hasPermission="['content:category:edit']"
             size="mini"
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
           >修改</el-button>
           <el-button
+            v-hasPermission="['content:category:remove']"
             size="mini"
             type="text"
             icon="el-icon-delete"
@@ -93,7 +112,7 @@
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
       :page-sizes="[10, 20, 30, 40]"
-      :current-page.sync="queryParams.pageNum"
+      :current-page.sync="queryParams.page"
       @current-change="getList"
       @size-change="getList"
     />
@@ -120,11 +139,41 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 分类导入对话框 -->
+    <el-dialog :title="importTitle" :visible.sync="importOpen" width="400px" append-to-body>
+      <el-upload
+        ref="upload"
+        :limit="1"
+        accept=".xlsx, .xls"
+        :disabled="importLoading"
+        :on-change="handleFileChange"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :on-error="handleFileError"
+        :auto-upload="false"
+        :file-list="fileList"
+        drag
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <div class="el-upload__tip text-center" slot="tip">
+          <div class="el-upload__tip" slot="tip">
+            仅允许导入xls、xlsx格式文件。
+            <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">下载模板</el-link>
+          </div>
+        </div>
+      </el-upload>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" :loading="importLoading" @click="submitFileForm">确 定</el-button>
+        <el-button @click="importOpen = false">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { listCategory, getCategory, delCategory, addCategory, updateCategory, exportCategory } from '@/api/content/category'
+import { listCategory, getCategory, delCategory, addCategory, updateCategory, exportCategory, importCategory } from '@/api/content/category'
 
 export default {
   name: 'Category',
@@ -150,9 +199,14 @@ export default {
       title: '',
       // 是否显示弹出层
       open: false,
+      // 导入参数
+      importOpen: false,
+      importLoading: false,
+      importTitle: "分类导入",
+      fileList: [],
       // 查询参数
       queryParams: {
-        pageNum: 1,
+        page: 1,
         pageSize: 10,
         name: null,
         description: null,
@@ -168,15 +222,31 @@ export default {
     }
   },
   created() {
+    // 调试权限信息
+    console.log('当前用户权限:', this.$store.getters.permissions)
+    console.log('当前用户角色:', this.$store.getters.roles)
+    console.log('是否有分类列表权限:', this.$store.getters.permissions.includes('content:category:list'))
     this.getList()
   },
   methods: {
+    /** 检查权限 */
+    checkPermission(permissions) {
+      const userPermissions = this.$store.getters.permissions
+      return permissions.some(permission => userPermissions.includes(permission))
+    },
     /** 查询分类列表 */
     getList() {
+      console.log('开始获取分类列表，查询参数:', this.queryParams)
       this.loading = true
       listCategory(this.queryParams).then(response => {
+        console.log('分类列表API响应:', response)
         this.categoryList = response.rows
         this.total = response.total
+        console.log('设置分类列表数据:', this.categoryList)
+        console.log('设置总数:', this.total)
+        this.loading = false
+      }).catch(error => {
+        console.error('获取分类列表失败:', error)
         this.loading = false
       })
     },
@@ -205,7 +275,7 @@ export default {
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      this.queryParams.pageNum = 1
+      this.queryParams.page = 1
       this.getList()
     },
     /** 重置按钮操作 */
@@ -274,6 +344,75 @@ export default {
         // this.$download.name(response.msg)
         this.exportLoading = false
       }).catch(() => {})
+    },
+    /** 导入按钮操作 */
+    handleImport() {
+      this.importTitle = "分类导入"
+      this.importOpen = true
+      this.fileList = []
+    },
+    /** 下载模板操作 */
+    importTemplate() {
+      this.$modal.confirm('是否下载导入模板？').then(() => {
+        return exportCategory()
+      }).then(response => {
+        this.$modal.msgSuccess("下载成功")
+      }).catch(() => {})
+    },
+    // 文件选择变化处理
+    handleFileChange(file, fileList) {
+      this.fileList = fileList
+    },
+    // 文件上传中处理
+    handleFileUploadProgress(event, file, fileList) {
+      this.importLoading = true
+    },
+    // 文件上传成功处理
+    handleFileSuccess(response, file, fileList) {
+      this.importLoading = false
+      this.importOpen = false
+      this.fileList = []
+      this.$refs.upload.clearFiles()
+      this.$modal.msgSuccess("导入成功")
+      this.getList()
+    },
+    // 文件上传失败处理
+    handleFileError(err, file, fileList) {
+      this.importLoading = false
+      this.$modal.msgError("导入失败")
+    },
+    // 提交上传文件
+    submitFileForm() {
+      if (this.fileList.length === 0) {
+        this.$modal.msgError("请选择要上传的文件")
+        return
+      }
+      
+      this.importLoading = true
+      const file = this.fileList[0].raw
+      
+      importCategory(file).then(response => {
+        this.importLoading = false
+        this.importOpen = false
+        this.fileList = []
+        this.$refs.upload.clearFiles()
+        this.$modal.msgSuccess("导入成功")
+        this.getList()
+      }).catch(error => {
+        this.importLoading = false
+        this.$modal.msgError("导入失败：" + (error.msg || error.message || "未知错误"))
+      })
+    },
+    /** 状态修改 */
+    handleStatusChange(row) {
+      const text = row.status === "0" ? "启用" : "停用";
+      this.$modal.confirm('确认要"' + text + '""' + row.name + '"分类吗？').then(function() {
+        return updateCategory(row);
+      }).then(() => {
+        this.$modal.msgSuccess(text + "成功");
+      }).catch(function() {
+        row.status = row.status === "0" ? "1" : "0";
+      });
     }
   }
 }

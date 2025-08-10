@@ -32,12 +32,12 @@ public class BlogCategoryController {
      */
     @Operation(summary = "获取分类列表", description = "获取所有可用的文章分类")
     @GetMapping("/getCategoryList")
-    public ResponseResult<List<CategoryVO>> getAllCategory() {
+    public ResponseResult<?> getAllCategory() {
         return ResponseResult.okResult(categoryService.listCategory());
     }
 
     @GetMapping("/{id}")
-    public ResponseResult getCategoryById(@PathVariable Long id) {
+    public ResponseResult<?> getCategoryById(@PathVariable Long id) {
         return ResponseResult.okResult(categoryService.getCategoryById(id));
     }
 

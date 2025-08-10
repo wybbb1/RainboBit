@@ -28,6 +28,7 @@ public class RecycleBinController {
     private LinkService linkService;
 
     @Operation(summary = "查询回收站文章列表", description = "分页查询已删除的文章列表")
+    @PreAuthorize("@ps.hasPermission('content:recyclebin:query')")
     @GetMapping("/articles")
     public ResponseResult<?> listDeletedArticles(
             @Parameter(description = "分页参数") PageQuery pageQuery,
@@ -37,6 +38,7 @@ public class RecycleBinController {
     }
 
     @Operation(summary = "查询回收站友链列表", description = "分页查询已删除的友链列表")
+    @PreAuthorize("@ps.hasPermission('content:recyclebin:query')")
     @GetMapping("/links")
     public ResponseResult<?> listDeletedLinks(
             @Parameter(description = "分页参数") PageQuery pageQuery,

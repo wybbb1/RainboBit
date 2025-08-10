@@ -54,6 +54,15 @@ public class RedisCacheHelper {
         return map;
     }
 
+    public void deleteMap(String key) {
+        if (key != null && !key.isBlank()) {
+            stringRedisTemplate.opsForHash().delete(key);
+        } else {
+            log.error(UserConstants.CACHE_VALUE_NULL);
+            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
+        }
+    }
+
     // 辅助方法：将 Redis 中的 Key 转换为目标类型 K
     private <T> T convertKey(Object redisKey, Class<T> targetType) {
         if (redisKey == null) {
