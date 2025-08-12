@@ -20,20 +20,65 @@ import java.util.List;
  */
 public interface RoleService extends IService<Role> {
 
+    // ========== 查询操作 ==========
+    
+    /**
+     * 根据用户ID查询角色权限标识
+     * @param id 用户ID
+     * @return 角色权限标识列表
+     */
     List<String> selectRoleKeyByUserId(Long id);
 
+    /**
+     * 分页查询角色列表
+     * @param pageQuery 分页参数
+     * @param roleName 角色名称
+     * @param status 角色状态
+     * @return 分页结果
+     */
     PageResult<RoleListVO> pageRole(PageQuery pageQuery, String roleName, String status);
 
-    void changeStatus(RoleStatusDTO roleStatusDTO);
-
-    void add(RoleDTO roleDTO);
-
+    /**
+     * 根据ID查询角色详情
+     * @param id 角色ID
+     * @return 角色详情
+     */
     RoleVO getRoleById(Long id);
 
+    /**
+     * 查询所有角色列表
+     * @return 角色列表
+     */
+    List<RoleVO> listAllRole();
+
+    // ========== 添加操作 ==========
+    
+    /**
+     * 添加角色
+     * @param roleDTO 角色信息
+     */
+    void add(RoleDTO roleDTO);
+
+    // ========== 更新操作 ==========
+    
+    /**
+     * 修改角色状态
+     * @param roleStatusDTO 角色状态信息
+     */
+    void changeStatus(RoleStatusDTO roleStatusDTO);
+
+    /**
+     * 更新角色信息
+     * @param roleDTO 角色信息
+     */
     void updateRole(RoleDTO roleDTO);
 
+    // ========== 删除操作 ==========
+    
+    /**
+     * 删除角色
+     * @param id 角色ID
+     */
     void delete(Long id);
-
-    List<RoleVO> listAllRole();
 }
 

@@ -60,7 +60,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
             Tag tag = BeanUtil.copyProperties(tagDTO, Tag.class);
             save(tag);
         }else{
-            throw new SystemException(TagConstant.TAG_NAME_OR_REMARK_NOT_BLANK);
+            throw new SystemException(TagConstant.NAME_OR_REMARK_NOT_BLANK);
         }
     }
 
@@ -72,7 +72,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
 
         Tag tag = getById(id);
         if (Objects.isNull(tag)) {
-            throw new SystemException(TagConstant.TAG_NOT_FOUND);
+            throw new SystemException(TagConstant.NOT_FOUND);
         }
 
         return BeanUtil.copyProperties(tag, TagVO.class);
@@ -96,7 +96,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
 
         List<Tag> tags = list(wrapper);
         if (tags.isEmpty()) {
-            throw new SystemException(TagConstant.NO_TAGS_FOUND);
+            throw new SystemException(TagConstant.NOT_FOUND);
         }
 
         return BeanUtil.copyToList(tags, TagVO.class);
@@ -109,13 +109,10 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
             throw new SystemException(TagConstant.INVALID_TAG_ID);
         }
         if (tagMapper.relateToArticle(id) > 0) {
-            throw new SystemException(TagConstant.TAG_RELATED_TO_ARTICLE);
+            throw new SystemException(TagConstant.RELATED_TO_ARTICLE);
         }
 
-        LambdaUpdateWrapper<Tag> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(Tag::getDelFlag, TagConstant.TAG_DELETED)
-                .eq(Tag::getId, id);
-        update(wrapper);
+        removeById(id);
     }
 }
 

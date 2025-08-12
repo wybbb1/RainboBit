@@ -56,8 +56,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public PageResult<ArticleListVO> page(Long categoryId, PageQuery pageQuery) {
 
         LambdaQueryWrapper<Article> articleQueryWrapper = new LambdaQueryWrapper<>();
-        articleQueryWrapper.eq(Article::getStatus, ArticleConstants.ARTICLE_STATUS_NORMAL) // 0表示正常状态
-                .eq(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED) // 0表示未删除状态
+        articleQueryWrapper.eq(Article::getStatus, ArticleConstants.STATUS_NORMAL) // 0表示正常状态
+                .eq(Article::getDelFlag, ArticleConstants.NOT_DELETED) // 0表示未删除状态
                 .eq(Objects.nonNull(categoryId) && categoryId > 0, Article::getCategoryId, categoryId) // 如果categoryId不为null且大于0，则添加分类条件
                 .orderByDesc(Article::getIsTop) // 先按照置顶状态降序
                 .orderByDesc(Article::getCreateTime); // 再按照创建时间降序
@@ -67,14 +67,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 获取所有分类信息
         Map<Long, String> finalEntries = redisCacheHelper.getMap(
-                CategoryConstants.CATEGORY_CACHE_KEY,
+                CategoryConstants.CACHE_KEY,
                 Long.class,
                 String.class,
                 () -> {
                     // 如果缓存中不存在，从数据库查询
                     LambdaQueryWrapper<Category> categoryQueryWrapper = new LambdaQueryWrapper<>();
-                    categoryQueryWrapper.eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED)
-                            .gt(Category::getRefer_cnt, CategoryConstants.CATEGORY_NO_REFERENCE);
+                    categoryQueryWrapper.eq(Category::getDelFlag, CategoryConstants.NOT_DELETED)
+                            .gt(Category::getRefer_cnt, CategoryConstants.NO_REFERENCE);
                     List<Category> categories = categoryService.list(categoryQueryWrapper);
 
                     // 将查询结果转换为VO对象
@@ -117,13 +117,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         article.setViewCount(viewCount);
 
-        if (article.getDelFlag() != ArticleConstants.ARTICLE_STATUS_NOT_DELETED) {
-            throw new SystemException(ArticleConstants.ARTICLE_STATUS_ERROR);
+        if (!article.getDelFlag().toString().equals(ArticleConstants.NOT_DELETED)) {
+            throw new SystemException(ArticleConstants.STATUS_ERROR);
         }
 
         ArticleDetail articleDetail = BeanUtil.copyProperties(article, ArticleDetail.class);
         // 获取文章分类名称
-        Object categoryName = stringRedisTemplate.opsForHash().get(CategoryConstants.CATEGORY_CACHE_KEY, article.getCategoryId().toString());
+        Object categoryName = stringRedisTemplate.opsForHash().get(CategoryConstants.CACHE_KEY, article.getCategoryId().toString());
         if (Objects.isNull(categoryName)){
             categoryName = categoryService.getById(article.getCategoryId()).getName();
         }
@@ -163,7 +163,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         queryWrapper
                 .like(Objects.nonNull(title) && !title.isBlank(), Article::getTitle, title)
                 .like(Objects.nonNull(summary) && !summary.isBlank(), Article::getSummary, summary)
-                .eq(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED)
+                .eq(Article::getDelFlag, ArticleConstants.NOT_DELETED)
                 .orderByDesc(Article::getCreateTime); // 按照创建时间降序
         if (id != UserConstants.ADMIN_LOGIN){
             queryWrapper.eq(Article::getCreateBy, id); // 如果不是管理员，则只查询当前用户的文章
@@ -196,18 +196,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public void delete(Long id) {
         // 逻辑删除文章
         LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_DELETED)
+        updateWrapper.set(Article::getDelFlag, ArticleConstants.DELETED)
                 .eq(Article::getId, id);
         update(updateWrapper);
-        /*// 删除文章标签
-        tagMapper.deleteByArticleId(id);*/
     }
 
     @Override
     public PageResult<ArticleListVO> listDeletedArticles(PageQuery pageQuery, String title, String summary) {
         LambdaQueryWrapper<Article> articleQueryWrapper = new LambdaQueryWrapper<>();
         articleQueryWrapper
-                .eq(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_DELETED) // 0表示未删除状态
+                .eq(Article::getDelFlag, ArticleConstants.DELETED) // 0表示未删除状态
                 .orderByDesc(Article::getIsTop) // 先按照置顶状态降序
                 .orderByDesc(Article::getCreateTime); // 再按照创建时间降序
 
@@ -216,14 +214,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 获取所有分类信息
         Map<Long, String> finalEntries = redisCacheHelper.getMap(
-                CategoryConstants.CATEGORY_CACHE_KEY,
+                CategoryConstants.CACHE_KEY,
                 Long.class,
                 String.class,
                 () -> {
                     // 如果缓存中不存在，从数据库查询
                     LambdaQueryWrapper<Category> categoryQueryWrapper = new LambdaQueryWrapper<>();
-                    categoryQueryWrapper.eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED)
-                            .gt(Category::getRefer_cnt, CategoryConstants.CATEGORY_NO_REFERENCE);
+                    categoryQueryWrapper.eq(Category::getDelFlag, CategoryConstants.NOT_DELETED)
+                            .gt(Category::getRefer_cnt, CategoryConstants.NO_REFERENCE);
                     List<Category> categories = categoryService.list(categoryQueryWrapper);
 
                     // 将查询结果转换为VO对象
@@ -254,11 +252,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public void restoreArticle(Long id) {
         // 恢复文章（逻辑删除标记改为未删除）
         LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED)
+        updateWrapper.set(Article::getDelFlag, ArticleConstants.NOT_DELETED)
                 .eq(Article::getId, id);
         update(updateWrapper);
+
     }
 
+    @Transactional
     @Override
     public void permanentDeleteArticle(Long id) {
         // 永久删除文章（物理删除）
@@ -272,12 +272,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 批量恢复文章
         if (ids != null && !ids.isEmpty()) {
             LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.set(Article::getDelFlag, ArticleConstants.ARTICLE_STATUS_NOT_DELETED)
+            updateWrapper.set(Article::getDelFlag, ArticleConstants.NOT_DELETED)
                     .in(Article::getId, ids);
             update(updateWrapper);
         }
     }
 
+    @Transactional
     @Override
     public void batchPermanentDeleteArticles(java.util.List<Long> ids) {
         // 批量永久删除文章

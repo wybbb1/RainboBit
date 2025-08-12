@@ -35,12 +35,12 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
     @Override
     public List<LinkVO> getAllLink() {
         return redisCacheHelper.getList(
-                LinkConstants.LINK_CACHE_KEY,
+                LinkConstants.CACHE_KEY,
                 LinkVO.class,
                 () -> {
                     List<Link> links = linkMapper.selectList(new LambdaQueryWrapper<Link>()
-                            .eq(Link::getStatus, LinkConstants.LINK_STATUS_NORMAL)
-                            .eq(Link::getDelFlag, LinkConstants.LINK_NOT_DELETED)
+                            .eq(Link::getStatus, LinkConstants.STATUS_NORMAL)
+                            .eq(Link::getDelFlag, LinkConstants.NOT_DELETED)
                             .orderByAsc(Link::getCreateTime));
 
                     return BeanUtil.copyToList(links, LinkVO.class);
@@ -53,7 +53,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         LambdaQueryWrapper<Link> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(name != null, Link::getName, name)
                 .eq(status != null, Link::getStatus, status)
-                .eq(Link::getDelFlag, LinkConstants.LINK_NOT_DELETED)
+                .eq(Link::getDelFlag, LinkConstants.NOT_DELETED)
                 .orderByDesc(Link::getCreateTime);
 
         Page<Link> page = new Page<>(pageQuery.getPage(), pageQuery.getPageSize());
@@ -66,7 +66,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
     @Override
     public void delete(Long id) {
         LambdaUpdateWrapper<Link> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(Link::getDelFlag, LinkConstants.LINK_DELETED)
+        wrapper.set(Link::getDelFlag, LinkConstants.DELETED)
                 .eq(Link::getId, id);
 
         update(wrapper);
@@ -78,7 +78,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         
         LambdaQueryWrapper<Link> wrapper = new LambdaQueryWrapper<>();
         // 查询已删除的友链
-        wrapper.eq(Link::getDelFlag, LinkConstants.LINK_DELETED);
+        wrapper.eq(Link::getDelFlag, LinkConstants.DELETED);
         
         // 根据名称模糊查询
         if (name != null && !name.isBlank()) {
@@ -105,7 +105,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
     public void restoreLink(Long id) {
         // 恢复友链（逻辑删除标记改为未删除）
         LambdaUpdateWrapper<Link> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(Link::getDelFlag, LinkConstants.LINK_NOT_DELETED)
+        wrapper.set(Link::getDelFlag, LinkConstants.NOT_DELETED)
                 .eq(Link::getId, id);
 
         update(wrapper);
@@ -122,7 +122,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         // 批量恢复友链
         if (ids != null && !ids.isEmpty()) {
             LambdaUpdateWrapper<Link> wrapper = new LambdaUpdateWrapper<>();
-            wrapper.set(Link::getDelFlag, LinkConstants.LINK_NOT_DELETED)
+            wrapper.set(Link::getDelFlag, LinkConstants.NOT_DELETED)
                     .in(Link::getId, ids);
             update(wrapper);
         }

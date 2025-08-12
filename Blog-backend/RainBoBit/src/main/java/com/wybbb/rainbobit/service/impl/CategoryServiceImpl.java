@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wybbb.rainbobit.common.constants.CategoryConstants;
 import com.wybbb.rainbobit.common.constants.SystemConstants;
+import com.wybbb.rainbobit.common.constants.TagConstant;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
 import com.wybbb.rainbobit.common.utils.WebUtils;
@@ -25,6 +26,7 @@ import com.wybbb.rainbobit.service.CategoryService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -50,14 +52,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     public List<CategoryVO> listCategory() {
         // 从缓存中获取分类列表
         Map<Long, String> map = redisCacheHelper.getMap(
-                CategoryConstants.CATEGORY_CACHE_KEY,
+                CategoryConstants.CACHE_KEY,
                 Long.class,
                 String.class,
                 () -> {
                     // 如果缓存中不存在，从数据库查询
                     LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
-                    queryWrapper.eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED)
-                            .gt(Category::getRefer_cnt, CategoryConstants.CATEGORY_NO_REFERENCE);
+                    queryWrapper.eq(Category::getDelFlag, CategoryConstants.NOT_DELETED)
+                            .gt(Category::getRefer_cnt, CategoryConstants.NO_REFERENCE);
                     List<Category> categories = list(queryWrapper);
 
                     // 将查询结果转换为VO对象
@@ -123,7 +125,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             
             // 获取现有的分类名称，避免重复导入
             List<String> existingNames = list(new LambdaQueryWrapper<Category>()
-                    .eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED))
+                    .eq(Category::getDelFlag, CategoryConstants.NOT_DELETED))
                     .stream()
                     .map(Category::getName)
                     .toList();
@@ -144,14 +146,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
                     if (category.getDescription() == null) {
                         category.setDescription("");
                     }
-                    category.setDelFlag(CategoryConstants.CATEGORY_NOT_DELETED);
+                    category.setDelFlag(Integer.valueOf(CategoryConstants.NOT_DELETED));
                     category.setRefer_cnt(0); // 设置初始引用计数为0
                 });
                 
                 saveBatch(categoriesToSave);
                 
                 // 清除分类缓存，让缓存重新加载
-                redisCacheHelper.deleteMap(CategoryConstants.CATEGORY_CACHE_KEY);
+                redisCacheHelper.deleteMap(CategoryConstants.CACHE_KEY);
             }
             
         } catch (SystemException e) {
@@ -165,7 +167,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     public PageResult<CategoryListVO> getCategoryList(PageQuery pageQuery, String name, String status) {
         // 构建查询条件
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED)
+        queryWrapper.eq(Category::getDelFlag, CategoryConstants.NOT_DELETED)
                 .like(name != null && !name.isEmpty(), Category::getName, name)
                 .eq(status != null && !status.isEmpty(), Category::getStatus, status)
                 .orderByAsc(Category::getCreateTime);
@@ -193,7 +195,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     public CategoryVO getCategoryById(Long id) {
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Category::getId, id)
-                .eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED);
+                .eq(Category::getDelFlag, CategoryConstants.NOT_DELETED);
 
         Category category = categoryMapper.selectOne(queryWrapper);
         return BeanUtil.copyProperties(category, CategoryVO.class);
@@ -207,7 +209,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Category::getName, category.getName())
                 .ne(Category::getId, category.getId())
-                .eq(Category::getDelFlag, CategoryConstants.CATEGORY_NOT_DELETED);
+                .eq(Category::getDelFlag, CategoryConstants.NOT_DELETED);
         
         if (categoryMapper.exists(queryWrapper)) {
             throw new SystemException(CategoryConstants.NAME_IS_EXIST);
@@ -216,9 +218,16 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         updateById(category);
     }
 
+    @Transactional
     @Override
     public void delete(Long id) {
-        // 逻辑删除分类
+        if (id == null || id <= 0) {
+            throw new SystemException(TagConstant.INVALID_TAG_ID);
+        }
+        if (categoryMapper.relateToArticle(id) > 0) {
+            throw new SystemException(TagConstant.RELATED_TO_ARTICLE);
+        }
+
         removeById(id);
     }
 }

@@ -56,8 +56,8 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     private MenuRoutesVo selectAdminRouters(){
         LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.ne(Menu::getMenuType, MenuConstants.MENU_TYPE_BUTTON)
-                .eq(Menu::getDelFlag, MenuConstants.MENU_NOT_DELETED);
+        queryWrapper.ne(Menu::getMenuType, MenuConstants.TYPE_BUTTON)
+                .eq(Menu::getDelFlag, MenuConstants.NOT_DELETED);
 
         List<Menu> menus = list(queryWrapper);
 
@@ -67,7 +67,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     private MenuRoutesVo buildMenuRoutes(List<Menu> menus){
         List<Menu> rootMenus = list().stream()
                 .filter(menu -> menu.getParentId() == 0)
-                .filter(menu -> menu.getDelFlag().equals(MenuConstants.MENU_NOT_DELETED))
+                .filter(menu -> menu.getDelFlag().equals(MenuConstants.NOT_DELETED))
                 .toList();
 
         List<Menu> tree = recurMenu(rootMenus, menus);
@@ -104,7 +104,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     public List<MenuVO> getMenuList(Integer status, String menuName) {
         LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(status != null, Menu::getStatus, status)
-                .eq(Menu::getDelFlag, MenuConstants.MENU_NOT_DELETED)
+                .eq(Menu::getDelFlag, MenuConstants.NOT_DELETED)
                 .like(menuName != null && !menuName.isBlank(), Menu::getMenuName, menuName)
                 .orderByAsc(Menu::getParentId)
                 .orderByAsc(Menu::getOrderNum);
@@ -118,7 +118,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     public MenuVO selectById(Long id) {
         Menu menu = getById(id);
         if (menu == null) {
-            throw new SystemException(MenuConstants.MENU_NOT_FOUND);
+            throw new SystemException(MenuConstants.NOT_FOUND);
         }
         return BeanUtil.copyProperties(menu, MenuVO.class);
     }
@@ -126,10 +126,10 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     public void updateMenu(Menu menu) {
         if (menu.getId() == null) {
-            throw new SystemException(MenuConstants.MENU_ID_NULL);
+            throw new SystemException(MenuConstants.ID_NULL);
         }
         if (menu.getId().equals(menu.getParentId())) {
-            throw new SystemException(MenuConstants.MENU_PARENT_ID_CANNOT_BE_SELF);
+            throw new SystemException(MenuConstants.PARENT_ID_CANNOT_BE_SELF);
         }
 
         updateById(menu);
@@ -140,11 +140,11 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Menu::getParentId, menuId);
         if (menuMapper.exists(queryWrapper)) {
-            throw new SystemException(MenuConstants.MENU_HAS_CHILDREN);
+            throw new SystemException(MenuConstants.HAS_CHILDREN);
         }
 
         LambdaUpdateWrapper<Menu> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(Menu::getDelFlag, MenuConstants.MENU_DELETED)
+        updateWrapper.set(Menu::getDelFlag, MenuConstants.DELETED)
                 .eq(Menu::getId, menuId);
         update(updateWrapper);
     }
@@ -153,8 +153,8 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     public void saveMenu(Menu menu) {
         if (menu.getParentId() == 0L) {
-            if (menu.getMenuType().equals(MenuConstants.MENU_TYPE_BUTTON)) {
-                throw new SystemException(MenuConstants.MENU_TYPE_MISMATCH);
+            if (menu.getMenuType().equals(MenuConstants.TYPE_BUTTON)) {
+                throw new SystemException(MenuConstants.TYPE_MISMATCH);
             }else{
                 save(menu);
             }
@@ -162,11 +162,11 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             Menu parentMenu = getById(menu.getParentId());
             String pType = parentMenu.getMenuType();
             String type = menu.getMenuType();
-            if ((pType.equals(MenuConstants.MENU_TYPE_MENU) && type.equals(MenuConstants.MENU_TYPE_BUTTON))
-                    || pType.equals(MenuConstants.MENU_TYPE_DIR) && (type.equals(MenuConstants.MENU_TYPE_MENU) || type.equals(MenuConstants.MENU_TYPE_DIR))) {
+            if ((pType.equals(MenuConstants.TYPE_MENU) && type.equals(MenuConstants.TYPE_BUTTON))
+                    || pType.equals(MenuConstants.TYPE_DIR) && (type.equals(MenuConstants.TYPE_MENU) || type.equals(MenuConstants.TYPE_DIR))) {
                 save(menu);
             }else{
-                throw new SystemException(MenuConstants.MENU_TYPE_MISMATCH);
+                throw new SystemException(MenuConstants.TYPE_MISMATCH);
             }
         }
 
@@ -178,8 +178,8 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         if (Objects.equals(userId, UserConstants.SUPER_ADMIN_ID)){
             // 如果是超级管理员，返回所有权限标识
             LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Menu::getStatus, MenuConstants.MENU_STATUS_NORMAL)
-                    .in(Menu::getMenuType, MenuConstants.MENU_TYPE_MENU, MenuConstants.MENU_TYPE_BUTTON);
+            queryWrapper.eq(Menu::getStatus, MenuConstants.STATUS_NORMAL)
+                    .in(Menu::getMenuType, MenuConstants.TYPE_MENU, MenuConstants.TYPE_BUTTON);
             menus = list(queryWrapper);
         }else{
             menus = menuMapper.selectByUserId(userId);
@@ -192,8 +192,8 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     public List<MenuTreeVO> getMenuTree() {
         // 获取所有菜单
         LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Menu::getDelFlag, MenuConstants.MENU_NOT_DELETED)
-                .eq(Menu::getStatus, MenuConstants.MENU_STATUS_NORMAL)
+        queryWrapper.eq(Menu::getDelFlag, MenuConstants.NOT_DELETED)
+                .eq(Menu::getStatus, MenuConstants.STATUS_NORMAL)
                 .orderByAsc(Menu::getOrderNum);
         List<Menu> menus = list(queryWrapper);
         // 获取首级目录
@@ -213,8 +213,8 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         List<Long> checkedKeys = null;
         if (Objects.equals(id, RoleConstants.ADMIN_ID)){
             checkedKeys = menuMapper.selectList(new LambdaQueryWrapper<Menu>()
-                    .eq(Menu::getDelFlag, MenuConstants.MENU_NOT_DELETED)
-                    .eq(Menu::getStatus, MenuConstants.MENU_STATUS_NORMAL))
+                    .eq(Menu::getDelFlag, MenuConstants.NOT_DELETED)
+                    .eq(Menu::getStatus, MenuConstants.STATUS_NORMAL))
                     .stream()
                     .map(Menu::getId)
                     .toList();

@@ -53,8 +53,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String userId = claims.get(JwtClaimsConstant.USER_ID).toString();
-        LoginUser loginUser = redisCacheHelper.getCacheObject(UserConstants.USER_CACHE_KEY + userId, LoginUser.class);
+        String userId = claims.get(JwtClaimsConstant.ID).toString();
+        LoginUser loginUser = redisCacheHelper.getCacheObject(UserConstants.CACHE_KEY + userId, LoginUser.class);
         // 存入SecurityContext
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, null);
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);

@@ -1,5 +1,6 @@
 package com.wybbb.rainbobit.controller;
 
+import com.wybbb.rainbobit.common.constants.SystemConstants;
 import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.common.utils.R2OssUtil;
 import com.wybbb.rainbobit.exception.SystemException;
@@ -21,10 +22,10 @@ public class FileOPController {
 
     @Operation(summary = "上传图片", description = "上传图片文件到云存储")
     @PostMapping("/upload")
-    public ResponseResult upload(
+    public ResponseResult<?> upload(
             @Parameter(description = "图片文件") MultipartFile img) {
         if (img == null || img.isEmpty()) {
-            throw new SystemException(UserConstants.FILE_IS_NULL);
+            throw new SystemException(SystemConstants.FILE_IS_NULL);
         }
         String url = r2OssUtil.uploadIMG(img);
         return ResponseResult.okResult(url);

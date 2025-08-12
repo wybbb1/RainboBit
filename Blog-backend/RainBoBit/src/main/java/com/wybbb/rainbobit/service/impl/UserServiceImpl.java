@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wybbb.rainbobit.common.constants.JwtClaimsConstant;
 import com.wybbb.rainbobit.common.constants.RoleConstants;
+import com.wybbb.rainbobit.common.constants.SystemConstants;
 import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.common.prop.JwtProperties;
@@ -92,18 +93,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Long userId = loginUser.getUser().getId();
         Map<String, Object> claims = new HashMap<>();
         if (type == UserConstants.ADMIN_LOGIN){
-            claims.put(JwtClaimsConstant.USER_TYPE, UserConstants.ADMIN_LOGIN);
+            claims.put(JwtClaimsConstant.TYPE, UserConstants.ADMIN_LOGIN);
         }
         else if (type == UserConstants.USER_LOGIN){
-            claims.put(JwtClaimsConstant.USER_TYPE, UserConstants.USER_LOGIN);
+            claims.put(JwtClaimsConstant.TYPE, UserConstants.USER_LOGIN);
         }else{
             throw new SystemException(UserConstants.LOGIN_TYPE_ERROR);
         }
 
-        claims.put(JwtClaimsConstant.USER_ID, userId);
+        claims.put(JwtClaimsConstant.ID, userId);
 
         // 将用户信息存入Redis
-        redisCacheHelper.setCacheObject(UserConstants.USER_CACHE_KEY + userId.toString(), LoginUser.class, loginUser);
+        redisCacheHelper.setCacheObject(UserConstants.CACHE_KEY + userId.toString(), LoginUser.class, loginUser);
 
         String token = JwtUtil.createJWT(
                 jwtProperties.getSecretKey(),
@@ -123,11 +124,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Long userId = SecurityUtils.getUserId();
 
         if (Objects.isNull(userId)) {
-            throw new SystemException(UserConstants.USER_NEED_LOGIN);
+            throw new SystemException(UserConstants.NEED_LOGIN);
         }
 
         // 从Redis中删除用户信息
-        redisCacheHelper.delCacheObject(UserConstants.USER_CACHE_KEY + userId.toString());
+        redisCacheHelper.delCacheObject(UserConstants.CACHE_KEY + userId.toString());
 
         // 清除SecurityContext中的认证信息
         SecurityContextHolder.clearContext();
@@ -148,7 +149,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String originalFilename = img.getOriginalFilename();
 
         if (originalFilename != null && !originalFilename.endsWith(".png")) {
-            throw new SystemException(UserConstants.FILE_TYPE_ERROR);
+            throw new SystemException(SystemConstants.FILE_TYPE_ERROR);
         }
 
         // 1. 获取文件基本信息
@@ -165,12 +166,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 return fileUrl;
             } else {
                 log.error("文件上传失败: {}，R2OssUtil未能返回URL。", originalFilename);
-                // R2OssUtil 内部应该已经记录了更详细的S3Exception日志
-                throw new SystemException(UserConstants.FILE_UPLOAD_ERROR);
+                throw new SystemException(SystemConstants.FILE_UPLOAD_ERROR);
             }
         } catch (Exception e) {
             log.error("文件上传时发生未知错误: {} : {}", originalFilename, e.getMessage(), e);
-            throw new SystemException(UserConstants.FILE_UPLOAD_ERROR);
+            throw new SystemException(SystemConstants.FILE_UPLOAD_ERROR);
         }
     }
 
@@ -241,8 +241,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.like(username != null && !username.isBlank(), User::getUserName, username)
                 .eq(phonenumber != null && !phonenumber.isBlank(), User::getPhonenumber, phonenumber)
                 .eq(status != null && !status.isBlank(), User::getStatus, status)
-                .eq(User::getDelFlag, UserConstants.USER_NOT_DELETED) // 只查询未删除的用户
-                .eq(User::getStatus, UserConstants.USER_NORMAL) // 只查询正常状态的用户
+                .eq(User::getDelFlag, UserConstants.NOT_DELETED) // 只查询未删除的用户
+                .eq(User::getStatus, UserConstants.NORMAL) // 只查询正常状态的用户
                 .orderByDesc(User::getCreateTime);
 
         Page<User> page = new Page<>(query.getPage(), query.getPageSize());
@@ -290,16 +290,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 检查用户是否存在
         User user = getById(id);
         if (user == null) {
-            throw new SystemException(UserConstants.USER_NOT_FOUND);
+            throw new SystemException(UserConstants.NOT_FOUND);
         }
 
         // 检查用户是否为超级管理员
-        if (UserConstants.SUPER_ADMIN.equals(user.getId())) {
+        if (UserConstants.SUPER_ADMIN_ID.equals(user.getId())) {
             throw new SystemException(UserConstants.CANNOT_DELETE_SUPER_ADMIN);
         }
 
         LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(User::getDelFlag, UserConstants.USER_DELETED)
+        updateWrapper.set(User::getDelFlag, UserConstants.DELETED)
                 .eq(User::getId, id);
         update(updateWrapper);
     }
@@ -307,11 +307,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public UserUpdateVO getUser(Long id) {
         if (id == null) {
-            throw new SystemException(UserConstants.User_ID_IS_NULL);
+            throw new SystemException(UserConstants.ID_IS_NULL);
         }
 
         List<Role> roleIds = null;
-        if (id.equals(UserConstants.SUPER_ADMIN)) {
+        if (id.equals(UserConstants.SUPER_ADMIN_ID)) {
             LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(Role::getStatus, RoleConstants.STATUS_NORMAL)
                     .eq(Role::getDelFlag, RoleConstants.NOT_DELETED)

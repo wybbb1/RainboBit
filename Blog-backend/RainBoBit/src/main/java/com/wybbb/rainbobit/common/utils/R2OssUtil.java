@@ -1,5 +1,6 @@
 package com.wybbb.rainbobit.common.utils;
 
+import com.wybbb.rainbobit.common.constants.SystemConstants;
 import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.common.prop.R2OssProperties;
 import com.wybbb.rainbobit.exception.SystemException;
@@ -52,7 +53,7 @@ public class R2OssUtil {
         String originalFilename = img.getOriginalFilename();
 
         if (originalFilename != null && !originalFilename.endsWith(".png") && !originalFilename.endsWith(".jpg")) {
-            throw new SystemException(UserConstants.FILE_TYPE_ERROR);
+            throw new SystemException(SystemConstants.FILE_TYPE_ERROR);
         }
 
         // 1. 获取文件基本信息
@@ -70,11 +71,11 @@ public class R2OssUtil {
             } else {
                 log.error("文件上传失败: {}，R2OssUtil未能返回URL。", originalFilename);
                 // R2OssUtil 内部应该已经记录了更详细的S3Exception日志
-                throw new SystemException(UserConstants.FILE_UPLOAD_ERROR);
+                throw new SystemException(SystemConstants.FILE_UPLOAD_ERROR);
             }
         } catch (Exception e) {
             log.error("文件上传时发生未知错误: {} : {}", originalFilename, e.getMessage(), e);
-            throw new SystemException(UserConstants.FILE_UPLOAD_ERROR);
+            throw new SystemException(SystemConstants.FILE_UPLOAD_ERROR);
         }
     }
 

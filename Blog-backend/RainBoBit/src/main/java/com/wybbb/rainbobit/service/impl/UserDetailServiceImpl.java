@@ -32,11 +32,11 @@ public class UserDetailServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUserName, username)
-                .eq(User::getDelFlag, UserConstants.USER_NOT_DELETED);
+                .eq(User::getDelFlag, UserConstants.NOT_DELETED);
         User user = userMapper.selectOne(queryWrapper);
 
         if (user == null){
-            throw new UsernameNotFoundException(UserConstants.USER_NOT_FOUND);
+            throw new UsernameNotFoundException(UserConstants.NOT_FOUND);
         }
 
         if (Objects.equals(user.getType(), String.valueOf(UserConstants.ADMIN_LOGIN))) {

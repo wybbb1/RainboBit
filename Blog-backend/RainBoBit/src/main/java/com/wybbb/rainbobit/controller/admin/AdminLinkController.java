@@ -20,7 +20,7 @@ public class AdminLinkController {
 
     @Operation(summary = "获取友链列表", description = "分页获取友链列表，支持按名称和状态搜索")
     @GetMapping("/list")
-    public ResponseResult getLink(
+    public ResponseResult<?> getLink(
             @Parameter(description = "分页参数") PageQuery pageQuery, 
             @Parameter(description = "友链名称") String name, 
             @Parameter(description = "友链状态") String status) {
@@ -29,7 +29,7 @@ public class AdminLinkController {
 
     @Operation(summary = "添加友链", description = "添加新的友链")
     @PostMapping
-    public ResponseResult addLink(
+    public ResponseResult<?> addLink(
             @Parameter(description = "友链信息") @RequestBody Link link) {
         linkService.save(link);
         return ResponseResult.okResult();
@@ -37,7 +37,7 @@ public class AdminLinkController {
 
     @Operation(summary = "根据ID获取友链", description = "根据友链ID获取友链详细信息")
     @GetMapping("/{id}")
-    public ResponseResult getLinkById(
+    public ResponseResult<?> getLinkById(
             @Parameter(description = "友链ID") @PathVariable Long id) {
         Link link = linkService.getById(id);
         return ResponseResult.okResult(link);
@@ -45,7 +45,7 @@ public class AdminLinkController {
 
     @Operation(summary = "更新友链", description = "更新友链信息")
     @PutMapping
-    public ResponseResult updateLink(
+    public ResponseResult<?> updateLink(
             @Parameter(description = "友链信息") @RequestBody Link link) {
         linkService.updateById(link);
         return ResponseResult.okResult();
@@ -53,7 +53,7 @@ public class AdminLinkController {
 
     @Operation(summary = "删除友链", description = "根据友链ID删除友链")
     @DeleteMapping("/{id}")
-    public ResponseResult deleteLink(
+    public ResponseResult<?> deleteLink(
             @Parameter(description = "友链ID") @PathVariable Long id) {
         linkService.delete(id);
         return ResponseResult.okResult();

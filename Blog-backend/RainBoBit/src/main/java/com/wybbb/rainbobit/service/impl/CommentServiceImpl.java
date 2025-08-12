@@ -31,7 +31,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Transactional
     @Override
-    public PageResult commentList(int type, Long articleId, PageQuery pageQuery) {
+    public PageResult<CommentVO> commentList(int type, Long articleId, PageQuery pageQuery) {
         if (type != CommentConstant.ARTICLE_COMMENT && type != CommentConstant.LINK_COMMENT) {
             throw new SystemException(AppHttpCodeEnum.INVALID_TYPE);
         }

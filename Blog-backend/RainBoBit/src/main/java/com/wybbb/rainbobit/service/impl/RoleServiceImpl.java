@@ -86,7 +86,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         Role role = roleMapper.selectById(roleId);
 
         if (role == null) {
-            throw new SystemException(RoleConstants.ROLE_NOT_EXIST);
+            throw new SystemException(RoleConstants.NOT_EXIST);
         }
         if (RoleConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey())) {
             throw new SystemException(RoleConstants.ADMIN_ROLE_CANNOT_CHANGE_STATUS);
