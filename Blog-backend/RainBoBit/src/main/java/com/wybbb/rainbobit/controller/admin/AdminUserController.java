@@ -20,7 +20,7 @@ public class AdminUserController {
 
     @Operation(summary = "获取用户列表", description = "分页获取用户列表，支持用户名、手机号、状态搜索")
     @GetMapping("/list")
-    public ResponseResult list(
+    public ResponseResult<?> list(
             @Parameter(description = "分页参数") PageQuery pageQuery, 
             @Parameter(description = "用户名") String username, 
             @Parameter(description = "手机号") String phonenumber, 
@@ -30,7 +30,7 @@ public class AdminUserController {
 
     @Operation(summary = "添加用户", description = "添加新用户")
     @PostMapping
-    public ResponseResult add(
+    public ResponseResult<?> add(
             @Parameter(description = "用户信息") @RequestBody UserDTO userDTO) {
         userService.add(userDTO);
         return ResponseResult.okResult();
@@ -38,7 +38,7 @@ public class AdminUserController {
 
     @Operation(summary = "删除用户", description = "根据用户ID删除用户")
     @DeleteMapping("/{id}")
-    public ResponseResult delete(
+    public ResponseResult<?> delete(
             @Parameter(description = "用户ID") @PathVariable Long id) {
         userService.delete(id);
         return ResponseResult.okResult();
@@ -46,14 +46,14 @@ public class AdminUserController {
 
     @Operation(summary = "获取用户信息", description = "根据用户ID获取用户详细信息")
     @GetMapping("/{id}")
-    public ResponseResult getUser(
+    public ResponseResult<?> getUser(
             @Parameter(description = "用户ID") @PathVariable Long id) {
         return ResponseResult.okResult(userService.getUser(id));
     }
 
     @Operation(summary = "更新用户", description = "更新用户信息")
     @PutMapping
-    public ResponseResult update(
+    public ResponseResult<?> update(
             @Parameter(description = "用户信息") @RequestBody UserDTO userDTO) {
         userService.update(userDTO);
         return ResponseResult.okResult();

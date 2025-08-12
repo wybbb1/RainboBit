@@ -15,7 +15,7 @@ public class BlogTagController {
     private TagService tagService;
 
     @GetMapping("/getAllTag")
-    public ResponseResult getAllTag() {
+    public ResponseResult<?> getAllTag() {
         return ResponseResult.okResult(tagService.listAllTags());
     }
 }

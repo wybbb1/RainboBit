@@ -27,12 +27,12 @@ public class AdminLoginController {
 
     @Operation(summary = "管理员登录", description = "管理员登录接口")
     @PostMapping("/login")
-    public ResponseResult login(
+    public ResponseResult<?> login(
             @Parameter(description = "登录信息") @RequestBody UserLoginDTO userLoginDTO) {
         String userName = userLoginDTO.getUserName();
         if (userName == null || userName.isBlank()){
             log.error("用户名不能为空");
-            throw new SystemException(AppHttpCodeEnum.REQUIRE_USERNAME);
+            throw new SystemException(UserConstants.USERNAME_IS_NULL);
         }
 
         return ResponseResult.okResult(userService.login(UserConstants.ADMIN_LOGIN, userLoginDTO));
@@ -40,7 +40,7 @@ public class AdminLoginController {
 
     @Operation(summary = "管理员登出", description = "管理员退出登录接口")
     @PostMapping("/logout")
-    public ResponseResult logout() {
+    public ResponseResult<?> logout() {
         userService.logout();
         return ResponseResult.okResult();
     }

@@ -15,4 +15,6 @@ public class CategoryConstants {
     public static final String EXPORT_SHEET_NAME = "分类列表";
 
     public static final String NAME_IS_EXIST = "分类名称已存在";
+    public static final String INVALID_ID = "无效的分类ID";
+    public static final String RELATED_TO_ARTICLE = "分类已关联文章，无法删除";
 }

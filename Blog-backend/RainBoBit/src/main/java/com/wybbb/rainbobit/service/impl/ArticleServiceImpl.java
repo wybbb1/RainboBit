@@ -242,6 +242,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 遍历文章列表，设置分类名称和标签id信息
         articleListVOS.forEach(articleListVO -> {
             articleListVO.setCategoryName(finalEntries.get(articleListVO.getCategoryId()));
+            articleListVO.setTagIds(tagMapper.getTagsBatch(articleListVO.getId()));
         });
 
 

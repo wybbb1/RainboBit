@@ -8,6 +8,7 @@ import com.wybbb.rainbobit.pojo.other.PageResult;
 import com.wybbb.rainbobit.pojo.vo.CategoryListVO;
 import com.wybbb.rainbobit.pojo.vo.CategoryVO;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public interface CategoryService extends IService<Category> {
     List<CategoryVO> listCategory();
 
     /**
-     * 分页获取分类列表（管理端）
+     * 分页获取分类列表
      */
     PageResult<CategoryListVO> getCategoryList(PageQuery pageQuery, String name, String status);
 
@@ -45,7 +46,7 @@ public interface CategoryService extends IService<Category> {
     /**
      * 导入分类数据
      */
-    void importCategory(org.springframework.web.multipart.MultipartFile file);
+    void importCategory(MultipartFile file);
 
     // ========================== 添加相关 ==========================
     

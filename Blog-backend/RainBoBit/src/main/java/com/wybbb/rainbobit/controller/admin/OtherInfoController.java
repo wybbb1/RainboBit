@@ -21,13 +21,13 @@ public class OtherInfoController {
 
     @Operation(summary = "获取管理员信息", description = "获取当前登录管理员的基本信息和权限")
     @GetMapping("/getInfo")
-    public ResponseResult adminGetInfo() {
+    public ResponseResult<?> adminGetInfo() {
         return ResponseResult.okResult(userService.adminGetInfo());
     }
 
     @Operation(summary = "获取路由信息", description = "获取当前用户的菜单路由信息")
     @GetMapping("/getRouters")
-    public ResponseResult getRouters() {
+    public ResponseResult<?> getRouters() {
         Long userId = SecurityUtils.getUserId();
         return ResponseResult.okResult(menuService.getRouters(userId));
     }

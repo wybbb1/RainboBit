@@ -103,6 +103,22 @@
       </el-table-column>
       <el-table-column prop="summary" label="摘要" align="center" show-overflow-tooltip />
       <el-table-column prop="categoryName" label="分类" align="center" width="100" />
+      <el-table-column label="标签" align="center" width="150">
+        <template slot-scope="scope">
+          <div v-if="getTagArray(scope.row.tagIds).length > 0" class="tags-container">
+            <el-tag
+              v-for="tagName in getTagArray(scope.row.tagIds)"
+              :key="tagName"
+              size="mini"
+              type="info"
+              class="tag-item"
+            >
+              {{ tagName }}
+            </el-tag>
+          </div>
+          <span v-else class="text-muted">无标签</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="createTime" label="创建时间" align="center" width="160" />
       <el-table-column
         label="操作"
@@ -164,6 +180,20 @@
         </div>
         <p><strong>摘要：</strong>{{ currentArticle.summary }}</p>
         <p><strong>分类：</strong>{{ currentArticle.categoryName }}</p>
+        <p><strong>标签：</strong>
+          <div v-if="getTagArray(currentArticle.tagIds).length > 0" class="tags-container" style="display: inline-block;">
+            <el-tag
+              v-for="tagName in getTagArray(currentArticle.tagIds)"
+              :key="tagName"
+              size="small"
+              type="info"
+              class="tag-item"
+            >
+              {{ tagName }}
+            </el-tag>
+          </div>
+          <span v-else class="text-muted">无标签</span>
+        </p>
         <p><strong>创建时间：</strong>{{ currentArticle.createTime }}</p>
         <div class="content-preview">
           <strong>内容预览：</strong>
@@ -187,6 +217,7 @@ import {
   batchPermanentDeleteArticles,
   clearArticleRecycleBin
 } from '@/api/content/recyclebin'
+import { listAllTag } from '@/api/content/tag'
 
 export default {
   name: 'ArticlesRecycle',
@@ -206,6 +237,8 @@ export default {
       total: 0,
       // 文章表格数据
       articleList: [],
+      // 所有标签列表
+      allTags: [],
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -223,8 +256,15 @@ export default {
       }
     }
   },
-  created() {
-    this.getList()
+  async created() {
+    // 先获取标签，再获取文章列表
+    try {
+      await this.getAllTags()
+      this.getList()
+    } catch (error) {
+      console.error('标签加载失败，仍然获取文章列表:', error)
+      this.getList()
+    }
   },
   methods: {
     /** 查询文章列表 */
@@ -239,6 +279,62 @@ export default {
       }).catch(() => {
         this.loading = false
       })
+    },
+    /** 获取所有标签 */
+    getAllTags() {
+      return listAllTag().then(response => {
+        // 根据API响应结构处理数据
+        this.allTags = response.data || response.rows || response || []
+      }).catch(error => {
+        console.error('获取标签列表失败:', error)
+        this.allTags = []
+      })
+    },
+    /** 根据标签ID数组获取标签名称字符串 */
+    getTagNames(tagIds) {
+      if (!tagIds || !Array.isArray(tagIds) || tagIds.length === 0) {
+        return ''
+      }
+      
+      // 确保allTags已加载
+      if (!this.allTags || this.allTags.length === 0) {
+        return ''
+      }
+      
+      const tagNames = tagIds
+        .map(id => {
+          // 处理字符串和数字ID的匹配问题
+          const tag = this.allTags.find(tag => 
+            tag.id == id || tag.id === id || 
+            String(tag.id) === String(id)
+          )
+          return tag ? tag.name : null
+        })
+        .filter(name => name !== null)
+        
+      return tagNames.join(', ')
+    },
+    /** 根据标签ID数组获取标签名称数组 */
+    getTagArray(tagIds) {
+      if (!tagIds || !Array.isArray(tagIds) || tagIds.length === 0) {
+        return []
+      }
+      
+      // 确保allTags已加载
+      if (!this.allTags || this.allTags.length === 0) {
+        return []
+      }
+      
+      return tagIds
+        .map(id => {
+          // 处理字符串和数字ID的匹配问题
+          const tag = this.allTags.find(tag => 
+            tag.id == id || tag.id === id || 
+            String(tag.id) === String(id)
+          )
+          return tag ? tag.name : null
+        })
+        .filter(name => name !== null)
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
@@ -334,5 +430,35 @@ export default {
 .text-muted {
   color: #999;
   font-size: 12px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+.tag-item {
+  margin: 2px;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-display {
+  color: #409EFF;
+  font-size: 12px;
+  background-color: #ecf5ff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid #d9ecff;
+  display: inline-block;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

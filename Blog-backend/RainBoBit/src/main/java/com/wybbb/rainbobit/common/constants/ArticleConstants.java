@@ -11,4 +11,5 @@ public class ArticleConstants {
 
     public static final String PARAM_INVALID = "参数错误";
     public static final String STATUS_ERROR = "文章状态错误";
+    public static final String NOT_FOUND = "文章不存在";
 }

@@ -39,7 +39,7 @@ public class BlogArticleController {
             @Parameter(description = "文章ID") @PathVariable Long id) {
         ArticleDetail article = articleService.articleDetail(id);
         if (Objects.isNull(article)) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.ARTICLE_NOT_EXIST);
+            throw new SystemException(ArticleConstants.NOT_FOUND);
         }
         return ResponseResult.okResult(articleService.articleDetail(id));
     }

@@ -19,7 +19,7 @@ public class BlogLinkController {
 
     @Operation(summary = "获取所有友链", description = "获取所有可用的友情链接列表")
     @GetMapping("/getAllLink")
-    public ResponseResult getAllLink(){
+    public ResponseResult<?> getAllLink(){
         return ResponseResult.okResult(linkService.getAllLink());
     }
 

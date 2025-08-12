@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wybbb.rainbobit.common.constants.CategoryConstants;
 import com.wybbb.rainbobit.common.constants.SystemConstants;
-import com.wybbb.rainbobit.common.constants.TagConstant;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
 import com.wybbb.rainbobit.common.utils.WebUtils;
@@ -102,6 +101,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         }
     }
 
+    @Transactional
     @Override
     public void importCategory(MultipartFile file) {
         try {
@@ -216,19 +216,23 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         }
         
         updateById(category);
+
+        redisCacheHelper.deleteMap(CategoryConstants.CACHE_KEY);
     }
 
     @Transactional
     @Override
     public void delete(Long id) {
         if (id == null || id <= 0) {
-            throw new SystemException(TagConstant.INVALID_TAG_ID);
+            throw new SystemException(CategoryConstants.INVALID_ID);
         }
         if (categoryMapper.relateToArticle(id) > 0) {
-            throw new SystemException(TagConstant.RELATED_TO_ARTICLE);
+            throw new SystemException(CategoryConstants.RELATED_TO_ARTICLE);
         }
 
         removeById(id);
+
+        redisCacheHelper.deleteMap(CategoryConstants.CACHE_KEY);
     }
 }
 

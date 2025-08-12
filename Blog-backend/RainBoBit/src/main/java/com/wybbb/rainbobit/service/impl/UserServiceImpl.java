@@ -139,7 +139,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Long userId = SecurityUtils.getUserId();
         User user = getById(userId);
         if (Objects.isNull(user)) {
-            throw new SystemException(AppHttpCodeEnum.NEED_LOGIN);
+            throw new SystemException(UserConstants.NEED_LOGIN);
         }
         return BeanUtil.copyProperties(user, UserInfoVO.class);
     }

@@ -27,7 +27,7 @@
         </el-col>
         <el-col :span="6">
           <el-form-item label="标签">
-            <el-select v-model="form.tags" placeholder="请选择" multiple>
+            <el-select v-model="form.tagIds" placeholder="请选择" multiple>
               <el-option
                 v-for="tag in tagList"
                 :key="tag.id"
@@ -116,7 +116,8 @@ export default {
         thumbnail: '',
         isTop: '1',
         isComment: '0',
-        content: ''
+        content: '',
+        tagIds: []
       },
       categoryList: [],
       tagList: [],
@@ -142,26 +143,59 @@ export default {
   methods: {
     getArticle() {
       getArticle(this.aId).then(response => {
+        console.log('获取文章数据:', response)
         this.form = response
-        this.fileList.push({ name: '缩略图', url: response.thumbnail })
+        // 确保 tagIds 是数组格式
+        if (response.tagIds && Array.isArray(response.tagIds)) {
+          this.form.tagIds = response.tagIds
+          console.log('设置 tagIds:', this.form.tagIds)
+        } else {
+          this.form.tagIds = []
+          console.log('tagIds 为空，设置为空数组')
+        }
+        // 移除可能存在的 tags 字段，避免冗余
+        if (this.form.tags) {
+          console.log('移除 tags 字段:', this.form.tags)
+          delete this.form.tags
+        }
+        if (response.thumbnail) {
+          this.fileList.push({ name: '缩略图', url: response.thumbnail })
+        }
       })
     },
     handleSave() {
-      this.form.status = '1'
-      addArticle(this.form).then(response => {
+      // 确保数据格式正确
+      const submitData = { ...this.form }
+      submitData.status = '1'
+      // 移除可能存在的 tags 字段
+      if (submitData.tags) {
+        delete submitData.tags
+      }
+      addArticle(submitData).then(response => {
         this.$modal.msgSuccess('保存草稿成功')
       })
     },
     handleSubmit() {
+      // 确保数据格式正确
+      const submitData = { ...this.form }
+      // 移除可能存在的 tags 字段
+      if (submitData.tags) {
+        console.log('提交前移除 tags 字段:', submitData.tags)
+        delete submitData.tags
+      }
+      
+      console.log('准备提交的数据:', submitData)
+      console.log('tagIds:', submitData.tagIds)
+      
       if (!this.aId) {
-        this.form.status = '0'
-        addArticle(this.form).then(response => {
+        submitData.status = '0'
+        addArticle(submitData).then(response => {
           this.$modal.msgSuccess('博客发布成功')
           this.$router.push({ path: '/content/article' })
         })
       } else {
         // 更新博客信息
-        updateArticle(this.form).then(response => {
+        updateArticle(submitData).then(response => {
           this.$modal.msgSuccess('博客更新成功')
           this.$router.push({ path: '/content/article' })
         })
@@ -192,10 +226,12 @@ export default {
     },
     getCategoryAndTag() {
       listAllCategory().then((response) => {
-        this.categoryList = response
+        this.categoryList = response.data || response.rows || response || []
+        console.log('获取到的分类列表:', this.categoryList)
       })
       listAllTag().then(response => {
-        this.tagList = response
+        this.tagList = response.data || response.rows || response || []
+        console.log('获取到的标签列表:', this.tagList)
       })
     },
     beforeAvatarUpload(file) {
@@ -214,15 +250,11 @@ export default {
 }
 </script>
 <style scoped>
-div .upload-demo {
-    /* padding-left: 80px; */
-}
 .el-col .el-upload {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
     cursor: pointer;
     position: relative;
-
     overflow: hidden;
   }
   .avatar-uploader .el-upload:hover {

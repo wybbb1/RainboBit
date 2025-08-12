@@ -33,7 +33,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public PageResult<CommentVO> commentList(int type, Long articleId, PageQuery pageQuery) {
         if (type != CommentConstant.ARTICLE_COMMENT && type != CommentConstant.LINK_COMMENT) {
-            throw new SystemException(AppHttpCodeEnum.INVALID_TYPE);
+            throw new SystemException(CommentConstant.INVALID_TYPE);
         }
 
         Page<CommentVO> page = new Page<>(pageQuery.getPage(), pageQuery.getPageSize());
@@ -56,7 +56,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public void addComment(Comment comment) {
         if (comment.getContent() == null || comment.getContent().isBlank()){
-            throw new SystemException(AppHttpCodeEnum.CONTENT_IS_NULL);
+            throw new SystemException(CommentConstant.CONTENT_IS_NULL);
         }
         save(comment);
     }

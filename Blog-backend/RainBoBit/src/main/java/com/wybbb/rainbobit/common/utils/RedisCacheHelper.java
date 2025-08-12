@@ -56,10 +56,9 @@ public class RedisCacheHelper {
 
     public void deleteMap(String key) {
         if (key != null && !key.isBlank()) {
-            stringRedisTemplate.opsForHash().delete(key);
+            stringRedisTemplate.delete(key);
         } else {
             log.error(UserConstants.CACHE_VALUE_NULL);
-            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
         }
     }
 
@@ -158,7 +157,7 @@ public class RedisCacheHelper {
             return JSONUtil.toBean(value, type);
         } else {
             log.error(UserConstants.CACHE_VALUE_NULL);
-            throw new SystemException(AppHttpCodeEnum.NEED_LOGIN);
+            throw new SystemException(UserConstants.NEED_LOGIN);
         }
     }
 

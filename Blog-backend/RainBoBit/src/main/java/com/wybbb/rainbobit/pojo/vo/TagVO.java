@@ -11,4 +11,10 @@ public class TagVO {
     private Long id;
     private String name;
     private String remark;
+
+    public TagVO(Long id, String name){
+        this.id = id;
+        this.name = name;
+        this.remark = "";
+    }
 }

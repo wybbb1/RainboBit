@@ -30,12 +30,12 @@ public class BlogLoginController {
 
     @Operation(summary = "用户登录", description = "博客用户登录接口")
     @PostMapping("/login")
-    public ResponseResult login(
+    public ResponseResult<?> login(
             @Parameter(description = "登录信息") @RequestBody UserLoginDTO userLoginDTO) {
         String userName = userLoginDTO.getUserName();
         if (userName == null || userName.isBlank()){
             log.error("用户名不能为空");
-            throw new SystemException(AppHttpCodeEnum.REQUIRE_USERNAME);
+            throw new SystemException(UserConstants.USERNAME_IS_NULL);
         }
 
         return ResponseResult.okResult(userService.login(UserConstants.USER_LOGIN, userLoginDTO));
@@ -43,7 +43,7 @@ public class BlogLoginController {
 
     @Operation(summary = "用户登出", description = "博客用户退出登录接口")
     @PostMapping("/logout")
-    public ResponseResult logout() {
+    public ResponseResult<?> logout() {
         userService.logout();
         return ResponseResult.okResult();
     }

@@ -17,9 +17,9 @@ import java.util.List;
 public interface TagMapper extends BaseMapper<Tag> {
     void saveTagsBatch(Long articleId, List<Long> tagIds);
 
-    Long relateToArticle(Long id);
+    Long relateToArticle(Long articleId);
 
-    void deleteByArticleId(Long id);
+    void deleteByArticleId(Long articleId);
 
     List<Long> getTagsBatch(Long articleId);
 }

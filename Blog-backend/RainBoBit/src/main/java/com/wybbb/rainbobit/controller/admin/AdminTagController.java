@@ -20,7 +20,7 @@ public class AdminTagController {
 
     @Operation(summary = "分页获取标签", description = "分页获取标签列表，支持搜索")
     @GetMapping("/list")
-    public ResponseResult page(
+    public ResponseResult<?> page(
             @Parameter(description = "标签搜索条件") TagDTO tagDTO, 
             @Parameter(description = "分页参数") PageQuery pageQuery) {
         return ResponseResult.okResult(tagService.getTag(tagDTO, pageQuery));
@@ -28,13 +28,13 @@ public class AdminTagController {
 
     @Operation(summary = "获取所有标签", description = "获取所有标签列表")
     @GetMapping("/listAllTag")
-    public ResponseResult list(){
+    public ResponseResult<?> list(){
         return ResponseResult.okResult(tagService.listAllTags());
     }
 
     @Operation(summary = "添加标签", description = "添加新的标签")
     @PostMapping
-    public ResponseResult add(
+    public ResponseResult<?> add(
             @Parameter(description = "标签信息") @RequestBody TagDTO tagDTO) {
         tagService.addTag(tagDTO);
         return ResponseResult.okResult();
@@ -42,7 +42,7 @@ public class AdminTagController {
 
     @Operation(summary = "删除标签", description = "根据标签ID删除标签")
     @DeleteMapping("/{id}")
-    public ResponseResult delete(
+    public ResponseResult<?> delete(
             @Parameter(description = "标签ID") @PathVariable Long id){
         tagService.removeTagById(id);
         return ResponseResult.okResult();
@@ -50,14 +50,14 @@ public class AdminTagController {
 
     @Operation(summary = "根据ID获取标签", description = "根据标签ID获取标签详细信息")
     @GetMapping("/{id}")
-    public ResponseResult geyById(
+    public ResponseResult<?> geyById(
             @Parameter(description = "标签ID") @PathVariable Long id) {
         return ResponseResult.okResult(tagService.getTagById(id));
     }
 
     @Operation(summary = "更新标签", description = "更新标签信息")
     @PutMapping
-    public ResponseResult update(
+    public ResponseResult<?> update(
             @Parameter(description = "标签信息") @RequestBody TagDTO tagDTO){
         tagService.updateTag(tagDTO);
         return ResponseResult.okResult();
