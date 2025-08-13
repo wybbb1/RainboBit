@@ -48,3 +48,15 @@ a {
   }
 }
 
+// Element Plus 消息弹窗位置调整
+// 让消息弹窗显示在导航栏下方
+.el-message {
+  top: 80px !important; // 导航栏高度60px + 20px间距
+  z-index: 999 !important; // 确保在导航栏下方，但仍然可见
+}
+
+// 如果有多个消息，确保它们正确堆叠
+.el-message + .el-message {
+  margin-top: 8px !important;
+}
+

@@ -367,7 +367,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String code = RandomUtil.randomNumbers(6);
 
         // 将验证码存入缓存
-        stringRedisTemplate.opsForValue().set(UserConstants.LOGIN_CODE_KEY + email, code, 60*5, TimeUnit.SECONDS);
+        stringRedisTemplate.opsForValue().set(UserConstants.LOGIN_CODE_KEY + email, code, 60, TimeUnit.SECONDS);
 
         // 发送验证码
         emailSender.sendVerificationCodeEmail(email, code);

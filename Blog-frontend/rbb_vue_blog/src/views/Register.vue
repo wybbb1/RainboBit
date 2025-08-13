@@ -123,14 +123,6 @@
           <router-link to="/login">已有账号？立即登录</router-link>
         </div>
       </form>
-      
-      <div v-if="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
-      
-      <div v-if="successMessage" class="success-message">
-        {{ successMessage }}
-      </div>
     </div>
   </div>
 </template>
@@ -141,6 +133,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { authApi } from '@/api/auth'
 import type { RegisterUserForm } from '@/types'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -161,8 +154,6 @@ const confirmPassword = ref('')
 
 // 状态
 const loading = ref(false)
-const errorMessage = ref('')
-const successMessage = ref('')
 
 // 验证码倒计时
 const countdown = ref(0)
@@ -173,23 +164,31 @@ let countdownTimer: number | null = null
  */
 const sendVerificationCode = async () => {
   if (!registerForm.email.trim()) {
-    errorMessage.value = '请先输入邮箱地址'
+    ElMessage.error({
+      message: '请先输入邮箱地址',
+      offset: 80
+    })
     return
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(registerForm.email)) {
-    errorMessage.value = '请输入有效的邮箱地址'
+    ElMessage.error({
+      message: '请输入有效的邮箱地址',
+      offset: 80
+    })
     return
   }
 
   try {
-    errorMessage.value = ''
     loading.value = true
     
     await authApi.sendEmailCode(registerForm.email)
     
-    successMessage.value = '验证码已发送到您的邮箱'
+    ElMessage.success({
+      message: '验证码已发送到您的邮箱',
+      offset: 80
+    })
     
     // 开始倒计时
     countdown.value = 60
@@ -204,7 +203,10 @@ const sendVerificationCode = async () => {
     }, 1000)
     
   } catch (error: any) {
-    errorMessage.value = error.message || '发送验证码失败，请重试'
+    ElMessage.error({
+      message: error.message || '发送验证码失败，请重试',
+      offset: 80
+    })
   } finally {
     loading.value = false
   }
@@ -215,43 +217,67 @@ const sendVerificationCode = async () => {
  */
 const validateForm = (): boolean => {
   if (!registerForm.userName.trim()) {
-    errorMessage.value = '请输入用户名'
+    ElMessage.error({
+      message: '请输入用户名',
+      offset: 80
+    })
     return false
   }
   
   if (!registerForm.nickName.trim()) {
-    errorMessage.value = '请输入昵称'
+    ElMessage.error({
+      message: '请输入昵称',
+      offset: 80
+    })
     return false
   }
   
   if (!registerForm.email.trim()) {
-    errorMessage.value = '请输入邮箱'
+    ElMessage.error({
+      message: '请输入邮箱',
+      offset: 80
+    })
     return false
   }
   
   if (!registerForm.password.trim()) {
-    errorMessage.value = '请输入密码'
+    ElMessage.error({
+      message: '请输入密码',
+      offset: 80
+    })
     return false
   }
   
   if (registerForm.password.length < 6) {
-    errorMessage.value = '密码长度不能少于6位'
+    ElMessage.error({
+      message: '密码长度不能少于6位',
+      offset: 80
+    })
     return false
   }
   
   if (registerForm.password !== confirmPassword.value) {
-    errorMessage.value = '两次输入的密码不一致'
+    ElMessage.error({
+      message: '两次输入的密码不一致',
+      offset: 80
+    })
     return false
   }
   
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(registerForm.email)) {
-    errorMessage.value = '请输入有效的邮箱地址'
+    ElMessage.error({
+      message: '请输入有效的邮箱地址',
+      offset: 80
+    })
     return false
   }
   
   if (!registerForm.code.trim()) {
-    errorMessage.value = '请输入邮箱验证码'
+    ElMessage.error({
+      message: '请输入邮箱验证码',
+      offset: 80
+    })
     return false
   }
   
@@ -262,9 +288,6 @@ const validateForm = (): boolean => {
  * 处理注册
  */
 const handleRegister = async () => {
-  errorMessage.value = ''
-  successMessage.value = ''
-  
   if (!validateForm()) {
     return
   }
@@ -274,7 +297,11 @@ const handleRegister = async () => {
   try {
     // 使用新的注册接口
     await authApi.register(registerForm)
-    successMessage.value = '注册成功！即将跳转到登录页面...'
+    ElMessage.success({
+      message: '注册成功！即将跳转到登录页面...',
+      offset: 80,
+      duration: 3000
+    })
     
     // 清理倒计时器
     if (countdownTimer) {
@@ -287,7 +314,10 @@ const handleRegister = async () => {
       router.push('/login')
     }, 2000)
   } catch (error: any) {
-    errorMessage.value = error.message || '注册失败，请重试'
+    ElMessage.error({
+      message: error.message || '注册失败，请重试',
+      offset: 80
+    })
   } finally {
     loading.value = false
   }
@@ -418,25 +448,5 @@ const handleRegister = async () => {
 
 .form-links a:hover {
   text-decoration: underline;
-}
-
-.error-message {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
-  text-align: center;
-}
-
-.success-message {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  border-radius: 4px;
-  text-align: center;
 }
 </style>
