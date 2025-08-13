@@ -1,14 +1,16 @@
 package com.wybbb.rainbobit.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wybbb.rainbobit.common.constants.CommentConstant;
-import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
+import com.wybbb.rainbobit.common.constants.CommentConstants;
 import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.mapper.CommentMapper;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
 import com.wybbb.rainbobit.pojo.other.PageResult;
 import com.wybbb.rainbobit.pojo.entity.Comment;
+import com.wybbb.rainbobit.pojo.vo.CommentListVO;
 import com.wybbb.rainbobit.pojo.vo.CommentVO;
 import com.wybbb.rainbobit.service.CommentService;
 import jakarta.annotation.Resource;
@@ -32,8 +34,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Transactional
     @Override
     public PageResult<CommentVO> commentList(int type, Long articleId, PageQuery pageQuery) {
-        if (type != CommentConstant.ARTICLE_COMMENT && type != CommentConstant.LINK_COMMENT) {
-            throw new SystemException(CommentConstant.INVALID_TYPE);
+        if (type != CommentConstants.ARTICLE_COMMENT && type != CommentConstants.LINK_COMMENT) {
+            throw new SystemException(CommentConstants.INVALID_TYPE);
         }
 
         Page<CommentVO> page = new Page<>(pageQuery.getPage(), pageQuery.getPageSize());
@@ -54,9 +56,21 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
+    public List<CommentListVO> getRecentComments(int limit) {
+        // 获取近一个月的评论
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getRootId, CommentConstants.ROOT_COMMENT) // 根评论
+                .orderByDesc(Comment::getCreateTime) // 按照创建时间降序
+                .last("LIMIT " + limit); // 限制数量
+
+        List<Comment> comments = list(queryWrapper);
+        return BeanUtil.copyToList(comments, CommentListVO.class);
+    }
+
+    @Override
     public void addComment(Comment comment) {
         if (comment.getContent() == null || comment.getContent().isBlank()){
-            throw new SystemException(CommentConstant.CONTENT_IS_NULL);
+            throw new SystemException(CommentConstants.CONTENT_IS_NULL);
         }
         save(comment);
     }

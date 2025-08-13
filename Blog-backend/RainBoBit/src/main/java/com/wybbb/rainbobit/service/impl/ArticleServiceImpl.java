@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wybbb.rainbobit.common.constants.ArticleConstants;
+import com.wybbb.rainbobit.common.constants.StatisticsConstants;
 import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
 import com.wybbb.rainbobit.common.utils.SecurityUtils;
@@ -99,7 +100,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public void updateViewCount(Long id) {
+        // 更新文章浏览量
         redisCacheHelper.incrementCacheMapValue(ArticleConstants.VIEW_COUNT_CACHE_KEY, id.toString(), 1L);
+        // 更新今日浏览量
+        redisCacheHelper.incrementCacheValue(StatisticsConstants.TODAY_VIEW_COUNT_CACHE_KEY, 1L);
     }
 
     @Transactional
@@ -180,6 +184,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         });
 
         return new PageResult<>(articlePage.getTotal(), articleListVOS);
+    }
+
+    @Override
+    public List<ArticleListVO> getRecentArticles(int limit) {
+        // 获取近一个月的文章
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Article::getDelFlag, ArticleConstants.NOT_DELETED) // 0表示未删除状态
+                .orderByDesc(Article::getCreateTime) // 按照创建时间降序
+                .last("LIMIT " + limit); // 限制数量
+
+        List<Article> articles = list(queryWrapper);
+        return BeanUtil.copyToList(articles, ArticleListVO.class).stream()
+                .peek(articleListVO -> {
+                    // 设置标签id
+                    articleListVO.setTagIds(tagMapper.getTagsBatch(articleListVO.getId()));
+                })
+                .toList();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.wybbb.rainbobit.controller.blog;
 
-import com.wybbb.rainbobit.common.constants.CommentConstant;
+import com.wybbb.rainbobit.common.constants.CommentConstants;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
 import com.wybbb.rainbobit.pojo.other.ResponseResult;
 import com.wybbb.rainbobit.pojo.entity.Comment;
@@ -24,14 +24,14 @@ public class BlogCommentController {
     public ResponseResult<?> commentList(
             @Parameter(description = "文章ID") Long articleId,
             @Parameter(description = "分页参数") PageQuery pageQuery){
-        return ResponseResult.okResult(commentService.commentList(CommentConstant.ARTICLE_COMMENT, articleId, pageQuery));
+        return ResponseResult.okResult(commentService.commentList(CommentConstants.ARTICLE_COMMENT, articleId, pageQuery));
     }
     
     @Operation(summary = "获取友链评论列表", description = "分页获取友链评论列表")
     @GetMapping("/linkCommentList")
     public ResponseResult<?> linkCommentList(
             @Parameter(description = "分页参数") PageQuery pageQuery){
-        return ResponseResult.okResult(commentService.commentList(CommentConstant.LINK_COMMENT, null, pageQuery));
+        return ResponseResult.okResult(commentService.commentList(CommentConstants.LINK_COMMENT, null, pageQuery));
     }
 
     @Operation(summary = "添加评论", description = "添加文章评论或友链评论")

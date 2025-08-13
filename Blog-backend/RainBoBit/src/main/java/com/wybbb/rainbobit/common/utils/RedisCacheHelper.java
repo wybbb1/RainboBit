@@ -8,6 +8,7 @@ import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.pojo.entity.LoginUser;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -144,17 +145,29 @@ public class RedisCacheHelper {
 
     public <T> void setCacheObject(String s, Class<T> type, T value) {
         if (value != null) {
-            stringRedisTemplate.opsForValue().set(s, JSONUtil.toJsonStr(value));
+            stringRedisTemplate.opsForValue().set(s, reconvertValue(value, type));
         }else{
             log.error(UserConstants.CACHE_VALUE_NULL);
             throw new SystemException(UserConstants.CACHE_VALUE_NULL);
         }
     }
 
+    private <T> String reconvertValue(T value, Class<T> type) {
+        if (type == Long.class || type == long.class) {
+            return String.valueOf(value); // 如果类型是 Long，直接转换为字符串
+        } else if (type == Integer.class || type == int.class) {
+            return String.valueOf(value); // 如果类型是 Integer，直接转换为字符串
+        } else if (type == String.class) {
+            return (String) value; // 如果类型是 String，直接返回
+        } else {
+            return JSONUtil.toJsonStr(value); // 否则进行 JSON 序列化
+        }
+    }
+
     public <T> T getCacheObject(String s, Class<T> type) {
         String value = stringRedisTemplate.opsForValue().get(s);
         if (value != null) {
-            return JSONUtil.toBean(value, type);
+            return convertValue(value, type);
         } else {
             log.error(UserConstants.CACHE_VALUE_NULL);
             throw new SystemException(UserConstants.NEED_LOGIN);
@@ -191,6 +204,10 @@ public class RedisCacheHelper {
         stringRedisTemplate.opsForHash().increment(key,hKey,v);
     }
 
+    public void incrementCacheValue(String key, long v) {
+        stringRedisTemplate.opsForValue().increment(key, v);
+    }
+
 
     public <K, V> Map<K, V> getCacheMap(String CacheKey, Class<K> type1, Class<V> type2) {
         Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(CacheKey);
@@ -201,5 +218,26 @@ public class RedisCacheHelper {
                         convertValue(entry.getValue().toString(), type2)
                 )
         ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public void deleteMapValue(String statisticsCacheKey, String todayViewCountCacheKey) {
+        if (statisticsCacheKey != null && !statisticsCacheKey.isBlank() && todayViewCountCacheKey != null && !todayViewCountCacheKey.isBlank()) {
+            stringRedisTemplate.opsForHash().delete(statisticsCacheKey, todayViewCountCacheKey);
+        } else {
+            log.error(UserConstants.CACHE_VALUE_NULL);
+            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
+        }
+    }
+
+
+    public <T> void setCacheMapValue(String mapCacheKey, String valueName, Class<T> type, T value) {
+        if (value != null) {
+            String stringValue = reconvertValue(value, type);
+            stringRedisTemplate.opsForHash().put(mapCacheKey, valueName, stringValue);
+        } else {
+            log.error(UserConstants.CACHE_VALUE_NULL);
+            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
+        }
+
     }
 }

@@ -41,10 +41,6 @@
           <router-link to="/register">还没有账号？立即注册</router-link>
         </div>
       </form>
-      
-      <div v-if="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
     </div>
   </div>
 </template>
@@ -54,6 +50,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import type { UserLoginDTO } from '@/types'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -66,22 +63,28 @@ const loginForm = reactive<UserLoginDTO>({
 
 // 状态
 const loading = ref(false)
-const errorMessage = ref('')
 
 /**
  * 处理登录
  */
 const handleLogin = async () => {
   if (!loginForm.userName.trim() || !loginForm.password.trim()) {
-    errorMessage.value = '请填写完整的登录信息'
+    ElMessage.error({
+      message: '请填写完整的登录信息',
+      offset: 80
+    })
     return
   }
 
   loading.value = true
-  errorMessage.value = ''
 
   try {
     await userStore.login(loginForm)
+    
+    ElMessage.success({
+      message: '登录成功！',
+      offset: 80
+    })
     
     // 登录成功，跳转到首页或之前访问的页面
     const redirect = router.currentRoute.value.query.redirect as string
@@ -103,7 +106,10 @@ const handleLogin = async () => {
       }
     }
     
-    errorMessage.value = message
+    ElMessage.error({
+      message: message,
+      offset: 80
+    })
   } finally {
     loading.value = false
   }
@@ -200,15 +206,5 @@ const handleLogin = async () => {
 
 .form-links a:hover {
   text-decoration: underline;
-}
-
-.error-message {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
-  text-align: center;
 }
 </style>

@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
 import com.wybbb.rainbobit.pojo.other.PageResult;
 import com.wybbb.rainbobit.pojo.entity.Comment;
+import com.wybbb.rainbobit.pojo.vo.CommentListVO;
 import com.wybbb.rainbobit.pojo.vo.CommentVO;
+
+import java.util.List;
 
 
 /**
@@ -25,6 +28,8 @@ public interface CommentService extends IService<Comment> {
      * @return 分页结果
      */
     PageResult<CommentVO> commentList(int type, Long articleId, PageQuery pageQuery);
+
+    List<CommentListVO> getRecentComments(int limit);
 
     // ========== 添加操作 ==========
     

@@ -41,6 +41,11 @@ public interface ArticleService extends IService<Article> {
      */
     PageResult<ArticleListVO> listDeletedArticles(PageQuery pageQuery, String title, String summary);
 
+    /**
+     * 获取近一个月文章
+     */
+    List<ArticleListVO> getRecentArticles(int limit);
+
     // ========================== 添加相关 ==========================
     
     /**
@@ -86,4 +91,5 @@ public interface ArticleService extends IService<Article> {
      * 批量永久删除文章
      */
     void batchPermanentDeleteArticles(List<Long> ids);
+
 }

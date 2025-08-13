@@ -1,6 +1,7 @@
 package com.wybbb.rainbobit.common.task;
 
 import com.wybbb.rainbobit.common.constants.ArticleConstants;
+import com.wybbb.rainbobit.common.constants.StatisticsConstants;
 import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
 import com.wybbb.rainbobit.mapper.ArticleMapper;
 import com.wybbb.rainbobit.pojo.entity.Article;
@@ -28,5 +29,12 @@ public class ViewCountUpdateTask {
                 .toList();
 
         articleService.updateBatchById(list);
+    }
+
+    @Scheduled(cron = "0 0 8 * * ?")
+    public void todayViewCountReset() {
+        // 每天早上8点重置浏览量
+        redisCacheHelper.deleteMapValue(StatisticsConstants.STATISTICS_CACHE_KEY, StatisticsConstants.TODAY_VIEW_COUNT);
+        redisCacheHelper.setCacheMapValue(StatisticsConstants.STATISTICS_CACHE_KEY, StatisticsConstants.TODAY_VIEW_COUNT, Long.class, 0L);
     }
 }
