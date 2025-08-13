@@ -25,7 +25,7 @@
           <router-link :to="`/categories/${category.id}`">
             <div class="category-header">
               <h3 class="category-name">{{ category.name }}</h3>
-              <span class="article-count">{{ getCategoryArticleCount(category.id) }} 篇文章</span>
+              <span class="article-count">{{ getCategoryArticleCount(Number(category.id)) }} 篇文章</span>
             </div>
             <div class="category-description" v-if="category.description">
               {{ category.description }}
@@ -39,7 +39,7 @@
             <div class="category-progress">
               <div 
                 class="progress-bar" 
-                :style="{ width: getProgressWidth(category.id) + '%' }"
+                :style="{ width: getProgressWidth(Number(category.id)) + '%' }"
               ></div>
             </div>
           </router-link>
@@ -65,13 +65,13 @@ const loading = ref(false);
 // 获取分类对应的文章数量
 const getCategoryArticleCount = (categoryId: number) => {
   return articles.value.filter(article => 
-    article.categoryId === categoryId
+    Number(article.categoryId) === categoryId
   ).length;
 };
 
 // 获取进度条宽度（基于文章数量的相对比例）
 const getProgressWidth = (categoryId: number) => {
-  const maxCount = Math.max(...categories.value.map(cat => getCategoryArticleCount(cat.id)));
+  const maxCount = Math.max(...categories.value.map(cat => getCategoryArticleCount(Number(cat.id))));
   const currentCount = getCategoryArticleCount(categoryId);
   return maxCount > 0 ? (currentCount / maxCount) * 100 : 0;
 };
@@ -90,8 +90,6 @@ const loadData = async () => {
     
     categories.value = categoryList || [];
     articles.value = articleResponse.rows || [];
-
-    console.log('Loaded articles:', articles.value);
     tags.value = tagList || [];
   } catch (error) {
     console.error('加载数据失败:', error);

@@ -134,9 +134,9 @@ const uploadFile = async (file: File) => {
   
   try {
     const response = await uploadApi.uploadImage(file)
-    imageUrl.value = response.url
-    emit('update:modelValue', response.url)
-    emit('upload-success', response.url)
+    imageUrl.value = response
+    emit('update:modelValue', response)
+    emit('upload-success', response)
     showSuccess('图片上传成功')
   } catch (error: any) {
     const message = error.message || '上传失败，请重试'

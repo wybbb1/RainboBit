@@ -9,6 +9,8 @@ export interface ArticleQuery extends PageQuery {
   categoryId?: number | string;
   /** 标签ID */
   tagId?: number | string;
+  /** 标签名称 */
+  tagName?: string;
   /** 状态（0已发布，1草稿） */
   status?: number | string;
   /** 搜索关键词 */

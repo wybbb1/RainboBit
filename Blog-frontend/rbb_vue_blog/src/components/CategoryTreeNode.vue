@@ -3,7 +3,7 @@
     <div class="node-content">
       <router-link :to="`/categories/${category.id}`" class="category-link">
         <span class="category-name">{{ category.name }}</span>
-        <span class="article-count">{{ getCategoryArticleCount(category.id) }}</span>
+        <span class="article-count">{{ getCategoryArticleCount(Number(category.id)) }}</span>
       </router-link>
     </div>
     <div v-if="category.children && category.children.length > 0" class="children">

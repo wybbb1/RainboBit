@@ -1,15 +1,42 @@
 <template>
-  <div class="tag-detail-page">
-    <h1>标签: {{ tagName }}</h1>
-    <div v-if="loading" class="loading">
-      <p>加载中...</p>
+  <div v-if="loading" class="loading">
+    <p>加载中...</p>
+  </div>
+  <div class="tag-detail-page" v-else>
+    <div class="tag-header">
+      <div class="breadcrumb">
+        <router-link to="/">首页</router-link>
+        <span class="separator">></span>
+        <span class="current">标签: {{ tagName }}</span>
+      </div>
+      
+      <h1 class="tag-title">{{ tagName }}</h1>
+      <div class="tag-info">
+        <div class="tag-stats">
+          <span class="stat-item">
+            <strong>{{ articles.length }}</strong> 篇文章
+          </span>
+        </div>
+      </div>
     </div>
-    <div v-else>
-      <div class="article-list">
-        <div v-for="article in articles" :key="article.id" class="article-item">
-          <h2 class="article-title">
+
+    <div class="articles-section">
+      <div class="section-header">
+        <h2>标签文章</h2>
+        <div class="sort-options">
+          <CustomSelect 
+            v-model="sortBy"
+            :options="sortOptions"
+            @change="sortArticles"
+          />
+        </div>
+      </div>
+
+      <div v-if="articles.length > 0" class="article-list">
+        <div v-for="article in sortedArticles" :key="article.id" class="article-item">
+          <h3 class="article-title">
             <router-link :to="`/article/${article.id}`">{{ article.title }}</router-link>
-          </h2>
+          </h3>
           <p class="article-summary">{{ article.summary }}</p>
           <div class="article-meta">
             <span class="publish-date">{{ formatDate(article.createTime) }}</span>
@@ -19,12 +46,14 @@
                 {{ getCategoryName(article.categoryId) }}
               </router-link>
             </span>
-            <span class="view-count">浏览: {{ article.viewCount }}</span>
+            <span class="view-count">{{ article.viewCount }} 次浏览</span>
+            <span class="is-top" v-if="article.isTop === '1'">置顶</span>
           </div>
         </div>
       </div>
-      <div v-if="articles.length === 0" class="no-articles">
-        <p>暂无相关文章</p>
+
+      <div v-else class="no-articles">
+        <p>该标签下暂无文章</p>
       </div>
     </div>
   </div>
@@ -36,17 +65,44 @@ import { useRoute } from 'vue-router';
 import { articleApi } from '@/api/article';
 import { categoryApi } from '@/api/category';
 import type { Article, Category, Tag } from '@/types';
+import CustomSelect from '@/components/CustomSelect.vue';
 
 const route = useRoute();
 const tagName = ref('');
 const articles = ref<Article[]>([]);
 const categories = ref<Category[]>([]);
 const loading = ref(false);
+const sortBy = ref('time');
+
+// 排序选项配置
+const sortOptions = [
+  { value: 'time', label: '按时间排序' },
+  { value: 'views', label: '按浏览量排序' },
+  { value: 'title', label: '按标题排序' }
+];
+
+// 排序后的文章
+const sortedArticles = computed(() => {
+  const articlesData = [...articles.value];
+  
+  switch (sortBy.value) {
+    case 'time':
+      return articlesData.sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime());
+    case 'views':
+      return articlesData.sort((a, b) => b.viewCount - a.viewCount);
+    case 'title':
+      return articlesData.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'));
+    default:
+      return articlesData;
+  }
+});
 
 // 获取分类名称
-const getCategoryName = (categoryId: number): string => {
-  const category = categories.value.find(c => c.id === categoryId);
-  return category?.name || '未分类';
+const getCategoryName = (categoryId: number | string): string => {
+  const category = categories.value.find(cat => 
+    String(cat.id) === String(categoryId) || cat.id === categoryId
+  );
+  return category ? category.name : '未分类';
 };
 
 // 加载文章列表，根据标签名称筛选
@@ -89,6 +145,10 @@ const formatDate = (dateString: string) => {
   });
 };
 
+const sortArticles = () => {
+  // 触发重新计算
+};
+
 onMounted(async () => {
   tagName.value = route.params.name as string;
   await Promise.all([
@@ -112,8 +172,74 @@ watch(
 <style lang="scss" scoped>
 @use '@/assets/styles/variables' as *;
 
+.tag-header {
+  margin-bottom: 40px;
+}
+
+.breadcrumb {
+  margin-bottom: 20px;
+  color: $text-color-secondary;
+  
+  a {
+    color: $primary-color;
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  
+  .separator {
+    margin: 0 10px;
+  }
+}
+
+.tag-title {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  color: $primary-color;
+}
+
+.tag-info {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 25px;
+  border: 1px solid $border-color;
+}
+
+.tag-stats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  
+  .stat-item {
+    color: $text-color-secondary;
+    
+    strong {
+      color: $primary-color;
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.articles-section {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    
+    h2 {
+      color: $text-color;
+      border-bottom: 2px solid $primary-color;
+      padding-bottom: 10px;
+      margin: 0;
+    }
+  }
+}
+
 .article-item {
-  padding: 30px 0;
+  padding: 25px 0;
   border-bottom: 1px solid $border-color;
 
   &:first-child {
@@ -126,8 +252,9 @@ watch(
 }
 
 .article-title a {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   color: $text-color;
+  text-decoration: none;
   transition: color 0.3s;
 
   &:hover {
@@ -137,18 +264,16 @@ watch(
 
 .article-summary {
   color: $text-color-secondary;
-  margin-top: 10px;
   line-height: 1.6;
+  margin: 15px 0;
 }
 
 .article-meta {
-  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
   font-size: 0.9rem;
   color: $text-color-secondary;
-
-  span {
-    margin-right: 15px;
-  }
 
   .category-link {
     color: $primary-color;
@@ -158,9 +283,27 @@ watch(
       text-decoration: underline;
     }
   }
+  
+  .is-top {
+    background: rgba($primary-color, 0.1);
+    color: $primary-color;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+  }
 }
 
 .no-articles {
+  text-align: center;
+  padding: 60px 0;
+  color: $text-color-secondary;
+  
+  p {
+    font-size: 1.2rem;
+  }
+}
+
+.loading {
   text-align: center;
   padding: 60px 0;
   color: $text-color-secondary;
