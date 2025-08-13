@@ -31,10 +31,6 @@ public class ArticleListVO {
      * 所属分类id
      */
     private Long categoryId;
-    /**
-     * 所属分类name
-     */
-    private String categoryName;
 
     private List<Long> tagIds;
     /**

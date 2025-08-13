@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * @author Ra1nbot
  * @since 2025-07-25 10:34:54
  */
-@Service("blogCategoryService")
+@Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
 
     @Resource

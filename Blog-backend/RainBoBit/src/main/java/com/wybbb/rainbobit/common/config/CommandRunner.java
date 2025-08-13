@@ -3,10 +3,8 @@ package com.wybbb.rainbobit.common.config;
 import com.wybbb.rainbobit.common.constants.ArticleConstants;
 import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
 import com.wybbb.rainbobit.mapper.ArticleMapper;
-import com.wybbb.rainbobit.pojo.entity.Article;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +13,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class ViewCountRunner implements CommandLineRunner {
+public class CommandRunner implements CommandLineRunner {
 
     @Resource
     private ArticleMapper articleMapper;

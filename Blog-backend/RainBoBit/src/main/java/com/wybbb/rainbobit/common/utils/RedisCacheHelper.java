@@ -192,8 +192,8 @@ public class RedisCacheHelper {
     }
 
 
-    public <K, V> Map<K, V> getCacheMap(String viewCountCacheKey, Class<K> type1, Class<V> type2) {
-        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(ArticleConstants.VIEW_COUNT_CACHE_KEY);
+    public <K, V> Map<K, V> getCacheMap(String CacheKey, Class<K> type1, Class<V> type2) {
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(CacheKey);
 
         return entries.entrySet().stream().map(
                 entry -> Map.entry(

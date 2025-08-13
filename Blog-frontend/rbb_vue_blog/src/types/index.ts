@@ -1,6 +1,18 @@
 // src/types/index.ts
 
 /**
+ * 文件上传响应
+ */
+export interface UploadResponse {
+  /** 响应码 */
+  code: string;
+  /** 响应消息 */
+  msg: string;
+  /** 文件URL */
+  data: string;
+}
+
+/**
  * 文章实体接口
  */
 export interface Article {
@@ -14,35 +26,6 @@ export interface Article {
   summary?: string;
   /** 所属分类id */
   categoryId: number | string;
-  /** 分类名称 */
-  categoryName: string;
-  /** 标签/**
- * 文件上传响应
- */
-}
-
-export interface UploadResponse {
-  /** 响应码 */
-  code: string;
-  /** 响应消息 */
-  msg: string;
-  /** 文件URL */
-  data: string;
-}
-
-export interface Article {
-  /** 文章ID */
-  id: number | string;
-  /** 标题 */
-  title: string;
-  /** 文章内容 */
-  content: string;
-  /** 文章摘要 */
-  summary?: string;
-  /** 所属分类id */
-  categoryId: number | string;
-  /** 分类名称 */
-  categoryName: string;
   /** 标签ID列表 */
   tagIds: number[];
   /** 缩略图 */

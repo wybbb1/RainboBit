@@ -102,7 +102,11 @@
         </template>
       </el-table-column>
       <el-table-column prop="summary" label="摘要" align="center" show-overflow-tooltip />
-      <el-table-column prop="categoryName" label="分类" align="center" width="100" />
+      <el-table-column label="分类" align="center" width="100">
+        <template slot-scope="scope">
+          <span>{{ getCategoryName(scope.row.categoryId) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="标签" align="center" width="150">
         <template slot-scope="scope">
           <div v-if="getTagArray(scope.row.tagIds).length > 0" class="tags-container">
@@ -179,7 +183,7 @@
           <img :src="currentArticle.thumbnail" alt="文章缩略图" style="max-width: 200px; max-height: 150px; border-radius: 4px; margin-top: 5px;">
         </div>
         <p><strong>摘要：</strong>{{ currentArticle.summary }}</p>
-        <p><strong>分类：</strong>{{ currentArticle.categoryName }}</p>
+        <p><strong>分类：</strong>{{ getCategoryName(currentArticle.categoryId) }}</p>
         <p><strong>标签：</strong>
           <div v-if="getTagArray(currentArticle.tagIds).length > 0" class="tags-container" style="display: inline-block;">
             <el-tag
@@ -218,6 +222,7 @@ import {
   clearArticleRecycleBin
 } from '@/api/content/recyclebin'
 import { listAllTag } from '@/api/content/tag'
+import { listAllCategory } from '@/api/content/category'
 
 export default {
   name: 'ArticlesRecycle',
@@ -239,6 +244,8 @@ export default {
       articleList: [],
       // 所有标签列表
       allTags: [],
+      // 所有分类列表
+      allCategories: [],
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -257,12 +264,15 @@ export default {
     }
   },
   async created() {
-    // 先获取标签，再获取文章列表
+    // 先获取标签和分类，再获取文章列表
     try {
-      await this.getAllTags()
+      await Promise.all([
+        this.getAllTags(),
+        this.getAllCategories()
+      ])
       this.getList()
     } catch (error) {
-      console.error('标签加载失败，仍然获取文章列表:', error)
+      console.error('数据加载失败，仍然获取文章列表:', error)
       this.getList()
     }
   },
@@ -289,6 +299,35 @@ export default {
         console.error('获取标签列表失败:', error)
         this.allTags = []
       })
+    },
+    /** 获取所有分类 */
+    getAllCategories() {
+      return listAllCategory().then(response => {
+        // 根据API响应结构处理数据
+        this.allCategories = response.data || response.rows || response || []
+      }).catch(error => {
+        console.error('获取分类列表失败:', error)
+        this.allCategories = []
+      })
+    },
+    /** 根据分类ID获取分类名称 */
+    getCategoryName(categoryId) {
+      if (!categoryId) {
+        return '未分类'
+      }
+      
+      // 确保allCategories已加载
+      if (!this.allCategories || this.allCategories.length === 0) {
+        return '加载中...'
+      }
+      
+      // 处理字符串和数字ID的匹配问题
+      const category = this.allCategories.find(cat => 
+        cat.id == categoryId || cat.id === categoryId || 
+        String(cat.id) === String(categoryId)
+      )
+      
+      return category ? category.name : '未分类'
     },
     /** 根据标签ID数组获取标签名称字符串 */
     getTagNames(tagIds) {

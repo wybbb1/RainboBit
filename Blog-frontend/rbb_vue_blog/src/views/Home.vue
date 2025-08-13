@@ -18,7 +18,7 @@
             <span class="category">
               分类: 
               <router-link :to="`/categories/${article.categoryId}`" class="category-link">
-                {{ article.categoryName }}
+                {{ getCategoryName(article.categoryId) }}
               </router-link>
             </span>
             <span class="separator">|</span>
@@ -56,12 +56,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { articleApi } from '@/api/article';
-import type { Article, Tag } from '@/types';
+import { categoryApi } from '@/api/category';
+import type { Article, Tag, Category } from '@/types';
 import { tagApi } from '@/api';
 import PageForm from '@/components/PageForm.vue';
 
 const articles = ref<Article[]>([]);
 const tags = ref<Tag[]>([]);
+const categories = ref<Category[]>([]);
 const loading = ref(false);
 // 分页相关变量
 const currentPage = ref(1);
@@ -76,8 +78,20 @@ const getArticleTags = (articleId: number | string): Tag[] => {
     return [];
   }
   
-  // 根据标签ID从所有标签中筛选出对应的标签
-  return tags.value.filter(tag => article.tagIds.includes(tag.id));
+  // 根据标签ID从所有标签中筛选出对应的标签，处理类型不匹配问题
+  return tags.value.filter(tag => 
+    article.tagIds.some(tagId => 
+      String(tag.id) === String(tagId) || tag.id === tagId
+    )
+  );
+};
+
+// 获取分类名称
+const getCategoryName = (categoryId: number | string): string => {
+  const category = categories.value.find(cat => 
+    String(cat.id) === String(categoryId) || cat.id === categoryId
+  );
+  return category ? category.name : '未分类';
 };
 
 
@@ -88,6 +102,16 @@ const loadTags = async () => {
     tags.value = response || [];
   } catch (error) {
     console.error('加载标签列表失败:', error);
+  }
+};
+
+// 获取所有分类
+const loadCategories = async () => {
+  try {
+    const response = await categoryApi.getCategoryList();
+    categories.value = response || [];
+  } catch (error) {
+    console.error('加载分类列表失败:', error);
   }
 };
 
@@ -120,7 +144,8 @@ const handlePageChange = (page: number) => {
 onMounted(async () => {
   await Promise.all([
     loadArticles(),
-    loadTags()
+    loadTags(),
+    loadCategories()
   ]);
 });
 

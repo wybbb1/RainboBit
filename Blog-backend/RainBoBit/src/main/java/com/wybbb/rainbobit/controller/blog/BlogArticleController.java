@@ -1,20 +1,16 @@
 package com.wybbb.rainbobit.controller.blog;
 
 import com.wybbb.rainbobit.common.constants.ArticleConstants;
-import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.exception.SystemException;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
 import com.wybbb.rainbobit.pojo.other.ResponseResult;
 import com.wybbb.rainbobit.pojo.other.ArticleDetail;
-import com.wybbb.rainbobit.pojo.vo.HotArticleVO;
 import com.wybbb.rainbobit.service.ArticleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 import java.util.Objects;
 
 @Tag(name = "文章", description = "文章相关接口")
