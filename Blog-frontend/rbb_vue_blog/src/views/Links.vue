@@ -6,12 +6,26 @@
     </div>
     <div v-else class="link-list">
         <div v-for="link in links" :key="link.id" class="link-item">
-            <a :href="link.address" target="_blank">
-                <div class="link-logo" v-if="link.logo">
-                    <img :src="link.logo" :alt="link.name" />
+            <a :href="formatLinkAddress(link.address)" target="_blank">
+                <div class="link-content">
+                    <div class="link-info">
+                        <div class="link-name">{{ link.name }}</div>
+                        <div class="link-desc">{{ link.description }}</div>
+                    </div>
+                    <div class="link-logo">
+                        <img 
+                            v-if="isValidLogo(link.logo)"
+                            :src="link.logo" 
+                            :alt="link.name"
+                            @error="handleImageError(link)"
+                            @load="handleImageLoad(link)"
+                            referrerpolicy="no-referrer"
+                        />
+                        <div v-else class="default-logo">
+                            {{ link.name.charAt(0).toUpperCase() }}
+                        </div>
+                    </div>
                 </div>
-                <div class="link-name">{{ link.name }}</div>
-                <div class="link-desc">{{ link.description }}</div>
             </a>
         </div>
     </div>
@@ -26,12 +40,46 @@ import type { Link } from '@/types';
 const links = ref<Link[]>([]);
 const loading = ref(false);
 
+// 格式化友链地址，确保是完整的URL
+const formatLinkAddress = (address: string): string => {
+  if (!address) return '#';
+  
+  // 如果已经是完整的URL（以http://或https://开头），直接返回
+  if (address.startsWith('http://') || address.startsWith('https://')) {
+    return address;
+  }
+  
+  // 否则添加https://前缀
+  return `https://${address}`;
+};
+
+// 检查logo是否有效
+const isValidLogo = (logo: string | null): boolean => {
+  return logo !== null && logo !== undefined && logo.trim() !== '';
+};
+
+// 处理图片加载错误
+const handleImageError = (link: Link) => {
+  console.error(`友链 "${link.name}" 的Logo加载失败:`, link.logo);
+};
+
+// 处理图片加载成功
+const handleImageLoad = (link: Link) => {
+  console.log(`友链 "${link.name}" 的Logo加载成功:`, link.logo);
+};
+
 // 加载友链列表
 const loadLinks = async () => {
   try {
     loading.value = true;
     const linkList = await linkApi.getLinkList();
     links.value = linkList || [];
+    // 添加调试信息
+    console.log('友链数据:', links.value);
+    links.value.forEach(link => {
+      const logoStatus = isValidLogo(link.logo) ? '有效' : '无效或为空';
+      console.log(`友链: ${link.name}, Logo: ${link.logo} (${logoStatus})`);
+    });
   } catch (error) {
     console.error('加载友链列表失败:', error);
   } finally {
@@ -105,17 +153,48 @@ onMounted(() => {
   }
 }
 
+.link-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.link-info {
+    flex: 1;
+    min-width: 0; // 防止flex子元素溢出
+}
+
 .link-logo {
-    margin-bottom: 10px;
+    flex-shrink: 0; // 防止logo被压缩
     
     img {
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
+        width: 48px;
+        height: 48px;
+        border-radius: 6px;
 
         @media (max-width: 480px) {
-          width: 28px;
-          height: 28px;
+          width: 40px;
+          height: 40px;
+        }
+    }
+    
+    .default-logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 18px;
+
+        @media (max-width: 480px) {
+          width: 40px;
+          height: 40px;
+          font-size: 16px;
         }
     }
 }
@@ -124,7 +203,7 @@ onMounted(() => {
     font-size: 1.2rem;
     font-weight: bold;
     color: $text-color;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 
     @media (max-width: 768px) {
       font-size: 1.1rem;
@@ -138,7 +217,6 @@ onMounted(() => {
 .link-desc {
     font-size: 0.9rem;
     color: $text-color-secondary;
-    margin-bottom: 8px;
     line-height: 1.4;
 
     @media (max-width: 480px) {

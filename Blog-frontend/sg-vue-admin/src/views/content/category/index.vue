@@ -55,7 +55,7 @@
           @click="handleExport"
         >导出</el-button>
       </el-col>
-      
+
       <el-col :span="1.5">
         <el-button
           v-hasPermission="['content:category:import']"
@@ -76,8 +76,8 @@
       <el-table-column prop="status" label="状态" align="center">
         <template slot-scope="scope">
           <el-switch
-            v-hasPermission="['content:category:edit']"
             v-model="scope.row.status"
+            v-hasPermission="['content:category:edit']"
             active-value="0"
             inactive-value="1"
             @change="handleStatusChange(scope.row)"
@@ -155,10 +155,10 @@
         :file-list="fileList"
         drag
       >
-        <i class="el-icon-upload"></i>
+        <i class="el-icon-upload" />
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <div class="el-upload__tip text-center" slot="tip">
-          <div class="el-upload__tip" slot="tip">
+        <div slot="tip" class="el-upload__tip text-center">
+          <div slot="tip" class="el-upload__tip">
             仅允许导入xls、xlsx格式文件。
             <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">下载模板</el-link>
           </div>
@@ -202,7 +202,7 @@ export default {
       // 导入参数
       importOpen: false,
       importLoading: false,
-      importTitle: "分类导入",
+      importTitle: '分类导入',
       fileList: [],
       // 查询参数
       queryParams: {
@@ -347,7 +347,7 @@ export default {
     },
     /** 导入按钮操作 */
     handleImport() {
-      this.importTitle = "分类导入"
+      this.importTitle = '分类导入'
       this.importOpen = true
       this.fileList = []
     },
@@ -356,7 +356,7 @@ export default {
       this.$modal.confirm('是否下载导入模板？').then(() => {
         return exportCategory()
       }).then(response => {
-        this.$modal.msgSuccess("下载成功")
+        this.$modal.msgSuccess('下载成功')
       }).catch(() => {})
     },
     // 文件选择变化处理
@@ -373,46 +373,46 @@ export default {
       this.importOpen = false
       this.fileList = []
       this.$refs.upload.clearFiles()
-      this.$modal.msgSuccess("导入成功")
+      this.$modal.msgSuccess('导入成功')
       this.getList()
     },
     // 文件上传失败处理
     handleFileError(err, file, fileList) {
       this.importLoading = false
-      this.$modal.msgError("导入失败")
+      this.$modal.msgError('导入失败')
     },
     // 提交上传文件
     submitFileForm() {
       if (this.fileList.length === 0) {
-        this.$modal.msgError("请选择要上传的文件")
+        this.$modal.msgError('请选择要上传的文件')
         return
       }
-      
+
       this.importLoading = true
       const file = this.fileList[0].raw
-      
+
       importCategory(file).then(response => {
         this.importLoading = false
         this.importOpen = false
         this.fileList = []
         this.$refs.upload.clearFiles()
-        this.$modal.msgSuccess("导入成功")
+        this.$modal.msgSuccess('导入成功')
         this.getList()
       }).catch(error => {
         this.importLoading = false
-        this.$modal.msgError("导入失败：" + (error.msg || error.message || "未知错误"))
+        this.$modal.msgError('导入失败：' + (error.msg || error.message || '未知错误'))
       })
     },
     /** 状态修改 */
     handleStatusChange(row) {
-      const text = row.status === "0" ? "启用" : "停用";
+      const text = row.status === '0' ? '启用' : '停用'
       this.$modal.confirm('确认要"' + text + '""' + row.name + '"分类吗？').then(function() {
-        return updateCategory(row);
+        return updateCategory(row)
       }).then(() => {
-        this.$modal.msgSuccess(text + "成功");
+        this.$modal.msgSuccess(text + '成功')
       }).catch(function() {
-        row.status = row.status === "0" ? "1" : "0";
-      });
+        row.status = row.status === '0' ? '1' : '0'
+      })
     }
   }
 }

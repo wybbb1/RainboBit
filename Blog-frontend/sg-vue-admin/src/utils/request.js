@@ -81,7 +81,7 @@ service.interceptors.response.use(res => {
     })
     return Promise.reject('error')
   } else {
-    //把字符串total 转换成 数字 total
+    // 把字符串total 转换成 数字 total
     if (res.data.data && res.data.data.total) {
       res.data.data.total = parseInt(res.data.data.total)
     }

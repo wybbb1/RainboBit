@@ -47,44 +47,44 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
+          v-hasPermission="['content:recyclebin:restore']"
           type="success"
           plain
           icon="el-icon-refresh-right"
           size="mini"
           :disabled="multiple"
           @click="handleBatchRestore"
-          v-hasPermission="['content:recyclebin:restore']"
         >批量恢复</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
+          v-hasPermission="['content:recyclebin:delete']"
           type="danger"
           plain
           icon="el-icon-delete"
           size="mini"
           :disabled="multiple"
           @click="handleBatchDelete"
-          v-hasPermission="['content:recyclebin:delete']"
         >永久删除</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
+          v-hasPermission="['content:recyclebin:clear']"
           type="warning"
           plain
           icon="el-icon-delete-solid"
           size="mini"
           @click="handleClearAll"
-          v-hasPermission="['content:recyclebin:clear']"
         >清空回收站</el-button>
       </el-col>
 
     </el-row>
 
     <!-- 数据表格 -->
-    <el-table 
+    <el-table
       v-loading="loading"
-      :data="articleList" 
-      style="width: 100%" 
+      :data="articleList"
+      style="width: 100%"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" />
@@ -132,27 +132,27 @@
       >
         <template slot-scope="scope">
           <el-button
+            v-hasPermission="['content:recyclebin:query']"
             size="mini"
             type="text"
             icon="el-icon-view"
             @click="handlePreview(scope.row)"
-            v-hasPermission="['content:recyclebin:query']"
           >预览</el-button>
           <el-button
+            v-hasPermission="['content:recyclebin:restore']"
             size="mini"
             type="text"
             icon="el-icon-refresh-right"
             style="color: #67C23A"
             @click="handleRestore(scope.row)"
-            v-hasPermission="['content:recyclebin:restore']"
           >恢复</el-button>
           <el-button
+            v-hasPermission="['content:recyclebin:delete']"
             size="mini"
             type="text"
             icon="el-icon-delete"
             style="color: #F56C6C"
             @click="handleDelete(scope.row)"
-            v-hasPermission="['content:recyclebin:delete']"
           >永久删除</el-button>
         </template>
       </el-table-column>
@@ -185,23 +185,23 @@
         <p><strong>摘要：</strong>{{ currentArticle.summary }}</p>
         <p><strong>分类：</strong>{{ getCategoryName(currentArticle.categoryId) }}</p>
         <p><strong>标签：</strong>
-          <div v-if="getTagArray(currentArticle.tagIds).length > 0" class="tags-container" style="display: inline-block;">
-            <el-tag
-              v-for="tagName in getTagArray(currentArticle.tagIds)"
-              :key="tagName"
-              size="small"
-              type="info"
-              class="tag-item"
-            >
-              {{ tagName }}
-            </el-tag>
-          </div>
-          <span v-else class="text-muted">无标签</span>
+        </p><div v-if="getTagArray(currentArticle.tagIds).length > 0" class="tags-container" style="display: inline-block;">
+          <el-tag
+            v-for="tagName in getTagArray(currentArticle.tagIds)"
+            :key="tagName"
+            size="small"
+            type="info"
+            class="tag-item"
+          >
+            {{ tagName }}
+          </el-tag>
+        </div>
+        <span v-else class="text-muted">无标签</span>
         </p>
         <p><strong>创建时间：</strong>{{ currentArticle.createTime }}</p>
         <div class="content-preview">
           <strong>内容预览：</strong>
-          <div v-html="currentArticle.content || '无内容'" style="margin-top: 10px; border: 1px solid #eee; padding: 15px; border-radius: 4px; max-height: 400px; overflow-y: auto;"></div>
+          <div style="margin-top: 10px; border: 1px solid #eee; padding: 15px; border-radius: 4px; max-height: 400px; overflow-y: auto;" v-html="currentArticle.content || '无内容'" />
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -281,7 +281,7 @@ export default {
     getList() {
       this.loading = true
       const params = { ...this.queryParams }
-      
+
       listDeletedArticles(params).then(response => {
         this.articleList = response.rows || response.data || []
         this.total = response.total || 0
@@ -315,18 +315,18 @@ export default {
       if (!categoryId) {
         return '未分类'
       }
-      
+
       // 确保allCategories已加载
       if (!this.allCategories || this.allCategories.length === 0) {
         return '加载中...'
       }
-      
+
       // 处理字符串和数字ID的匹配问题
-      const category = this.allCategories.find(cat => 
-        cat.id == categoryId || cat.id === categoryId || 
+      const category = this.allCategories.find(cat =>
+        cat.id == categoryId || cat.id === categoryId ||
         String(cat.id) === String(categoryId)
       )
-      
+
       return category ? category.name : '未分类'
     },
     /** 根据标签ID数组获取标签名称字符串 */
@@ -334,23 +334,23 @@ export default {
       if (!tagIds || !Array.isArray(tagIds) || tagIds.length === 0) {
         return ''
       }
-      
+
       // 确保allTags已加载
       if (!this.allTags || this.allTags.length === 0) {
         return ''
       }
-      
+
       const tagNames = tagIds
         .map(id => {
           // 处理字符串和数字ID的匹配问题
-          const tag = this.allTags.find(tag => 
-            tag.id == id || tag.id === id || 
+          const tag = this.allTags.find(tag =>
+            tag.id == id || tag.id === id ||
             String(tag.id) === String(id)
           )
           return tag ? tag.name : null
         })
         .filter(name => name !== null)
-        
+
       return tagNames.join(', ')
     },
     /** 根据标签ID数组获取标签名称数组 */
@@ -358,17 +358,17 @@ export default {
       if (!tagIds || !Array.isArray(tagIds) || tagIds.length === 0) {
         return []
       }
-      
+
       // 确保allTags已加载
       if (!this.allTags || this.allTags.length === 0) {
         return []
       }
-      
+
       return tagIds
         .map(id => {
           // 处理字符串和数字ID的匹配问题
-          const tag = this.allTags.find(tag => 
-            tag.id == id || tag.id === id || 
+          const tag = this.allTags.find(tag =>
+            tag.id == id || tag.id === id ||
             String(tag.id) === String(id)
           )
           return tag ? tag.name : null

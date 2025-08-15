@@ -40,6 +40,8 @@ public class BlogArticleController {
         return ResponseResult.okResult(articleService.articleDetail(id));
     }
 
+
+
     @Operation(summary = "更新文章浏览量", description = "增加文章的浏览次数")
     @PutMapping("/updateViewCount/{id}")
     public ResponseResult<?> updateViewCount(

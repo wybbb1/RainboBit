@@ -5,13 +5,10 @@ spring:
   application:
     name: RainBoBit
 
-  profiles:
-    active: dev
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${spring.datasource.url}
-    username: ${spring.datasource.username}
+    url: jdbc:mysql://mysql:3306/rbb_blog?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false
+    username: root
     password: ${spring.datasource.password}
 
   servlet:
@@ -21,8 +18,8 @@ spring:
 
   data:
     redis:
-      host: ${spring.redis.host}
-      port: ${spring.redis.port}
+      host: redis
+      port: 6379
       password: ${spring.redis.password}
       lettuce:
         pool:
@@ -41,8 +38,8 @@ spring:
       fail-on-unknown-properties: false
 
   mail: #  QQ 邮箱 SMTP 配置
-    host: ${email.SMTP_HOST}
-    port: ${email.SMTP_PORT}
+    host: smtp.qq.com
+    port: 465
     username: ${email.SENDER_EMAIL}
     password: ${email.SENDER_PASSWORD}
     properties: # SSL/TLS 配置
@@ -51,16 +48,12 @@ spring:
           auth: true
           ssl:
             enable: true
-            trust: ${email.SMTP_HOST}
+            trust: smtp.qq.com
 
 
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-# 由于mp默认采用雪花算法生成id，不需要这个功能，修改为主键自增
-  global-config:
-    db-config:
-      id-type: auto
 
 rainbobit:
   oss:
@@ -73,8 +66,8 @@ rainbobit:
 
   jwt:
     secret-key: ${sky.jwt.secret-key}
-    ttl: ${sky.jwt.ttl}
-    token-name: ${sky.jwt.token-name}
+    ttl: 7200000 # 2小时
+    token-name: token
 
 
 # SpringDoc配置

@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wybbb.rainbobit.common.constants.LinkConstants;
 import com.wybbb.rainbobit.common.utils.RedisCacheHelper;
 import com.wybbb.rainbobit.mapper.LinkMapper;
+import com.wybbb.rainbobit.pojo.dto.LinkDTO;
 import com.wybbb.rainbobit.pojo.entity.Link;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
 import com.wybbb.rainbobit.pojo.other.PageResult;
@@ -17,6 +18,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 友链(Link)表服务实现类
@@ -34,18 +36,17 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
     @Override
     public List<LinkVO> getAllLink() {
-        return redisCacheHelper.getList(
+        List<Link> list = redisCacheHelper.getList(
                 LinkConstants.CACHE_KEY,
-                LinkVO.class,
+                Link.class,
                 () -> {
-                    List<Link> links = linkMapper.selectList(new LambdaQueryWrapper<Link>()
+                    return linkMapper.selectList(new LambdaQueryWrapper<Link>()
                             .eq(Link::getStatus, LinkConstants.STATUS_NORMAL)
                             .eq(Link::getDelFlag, LinkConstants.NOT_DELETED)
                             .orderByAsc(Link::getCreateTime));
-
-                    return BeanUtil.copyToList(links, LinkVO.class);
                 }
         );
+        return BeanUtil.copyToList(list, LinkVO.class);
     }
 
     @Override
@@ -99,6 +100,18 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         List<LinkVO> linkVOs = BeanUtil.copyToList(links, LinkVO.class);
         
         return new PageResult<>(page.getTotal(), linkVOs);
+    }
+
+    @Override
+    public void add(LinkDTO linkDTO) {
+        Link link = BeanUtil.copyProperties(linkDTO, Link.class);
+        save(link);
+
+        redisCacheHelper.pushList(
+                LinkConstants.CACHE_KEY,
+                BeanUtil.copyProperties(linkDTO, Link.class),
+                Link.class
+        );
     }
 
     @Override

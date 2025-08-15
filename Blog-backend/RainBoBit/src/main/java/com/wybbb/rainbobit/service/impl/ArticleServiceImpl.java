@@ -103,7 +103,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 更新文章浏览量
         redisCacheHelper.incrementCacheMapValue(ArticleConstants.VIEW_COUNT_CACHE_KEY, id.toString(), 1L);
         // 更新今日浏览量
-        redisCacheHelper.incrementCacheValue(StatisticsConstants.TODAY_VIEW_COUNT_CACHE_KEY, 1L);
+        redisCacheHelper.incrementCacheMapValue(StatisticsConstants.STATISTICS_CACHE_KEY, StatisticsConstants.TODAY_VIEW_COUNT, 1L);
     }
 
     @Transactional

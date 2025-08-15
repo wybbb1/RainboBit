@@ -6,29 +6,29 @@
         <p>实时监控博客数据统计</p>
       </div>
       <div class="header-right">
-        <el-button 
-          type="primary" 
-          icon="el-icon-refresh" 
-          @click="refreshData"
+        <el-button
+          type="primary"
+          icon="el-icon-refresh"
           :loading="loading.statistics"
+          @click="refreshData"
         >
           刷新数据
         </el-button>
       </div>
     </div>
-    
+
     <!-- 数据卡片 -->
-    <div class="data-cards" v-loading="loading.statistics">
+    <div v-loading="loading.statistics" class="data-cards">
       <div class="data-card">
         <div class="card-icon article-icon">📝</div>
         <div class="card-content">
           <h3>{{ statistics.articleCount || 0 }}</h3>
           <p>文章总数</p>
-          <span class="trend up" v-if="statistics.newArticles > 0">+{{ statistics.newArticles }} 本月新增</span>
-          <span class="trend" v-else>{{ statistics.newArticles || 0 }} 本月新增</span>
+          <span v-if="statistics.newArticles > 0" class="trend up">+{{ statistics.newArticles }} 本月新增</span>
+          <span v-else class="trend">{{ statistics.newArticles || 0 }} 本月新增</span>
         </div>
       </div>
-      
+
       <div class="data-card">
         <div class="card-icon category-icon">📁</div>
         <div class="card-content">
@@ -37,24 +37,24 @@
           <span class="trend">共{{ statistics.tagCount || 0 }}个标签</span>
         </div>
       </div>
-      
+
       <div class="data-card">
         <div class="card-icon view-icon">👁️</div>
         <div class="card-content">
           <h3>{{ statistics.totalViews || 0 }}</h3>
           <p>总浏览量</p>
-          <span class="trend up" v-if="statistics.todayViews > 0">+{{ statistics.todayViews }} 今日浏览</span>
-          <span class="trend" v-else>{{ statistics.todayViews || 0 }} 今日浏览</span>
+          <span v-if="statistics.todayViews > 0" class="trend up">+{{ statistics.todayViews }} 今日浏览</span>
+          <span v-else class="trend">{{ statistics.todayViews || 0 }} 今日浏览</span>
         </div>
       </div>
-      
+
       <div class="data-card">
         <div class="card-icon comment-icon">💬</div>
         <div class="card-content">
           <h3>{{ statistics.commentCount || 0 }}</h3>
           <p>评论总数</p>
-          <span class="trend up" v-if="statistics.newComments > 0">+{{ statistics.newComments }} 新评论</span>
-          <span class="trend" v-else>{{ statistics.newComments || 0 }} 新评论</span>
+          <span v-if="statistics.newComments > 0" class="trend up">+{{ statistics.newComments }} 新评论</span>
+          <span v-else class="trend">{{ statistics.newComments || 0 }} 新评论</span>
         </div>
       </div>
     </div>
@@ -63,33 +63,33 @@
     <div class="chart-section">
       <div class="chart-container">
         <h3>文章分类分布</h3>
-        <div class="category-list" v-loading="loading.category">
+        <div v-loading="loading.category" class="category-list">
           <div v-for="category in categoryData" :key="category.id" class="category-item">
             <span class="category-name">{{ category.name }}</span>
             <div class="category-bar">
-              <div class="bar-fill" :style="{ width: category.percentage + '%' }"></div>
+              <div class="bar-fill" :style="{ width: category.percentage + '%' }" />
             </div>
             <span class="category-count">{{ category.count }}篇</span>
           </div>
           <div v-if="categoryData.length === 0" class="empty-data">
-            <i class="el-icon-folder"></i>
+            <i class="el-icon-folder" />
             <p>暂无分类数据</p>
           </div>
         </div>
       </div>
-      
+
       <div class="chart-container">
         <h3>标签分布统计</h3>
-        <div class="tag-list" v-loading="loading.tags">
+        <div v-loading="loading.tags" class="tag-list">
           <div v-for="tag in tagData" :key="tag.id" class="tag-item">
             <span class="tag-name">{{ tag.name }}</span>
             <div class="tag-bar">
-              <div class="bar-fill" :style="{ width: tag.percentage + '%' }"></div>
+              <div class="bar-fill" :style="{ width: tag.percentage + '%' }" />
             </div>
             <span class="tag-count">{{ tag.count }}次</span>
           </div>
           <div v-if="tagData.length === 0" class="empty-data">
-            <i class="el-icon-price-tag"></i>
+            <i class="el-icon-price-tag" />
             <p>暂无标签数据</p>
           </div>
         </div>
@@ -98,7 +98,7 @@
 
     <!-- 最新数据 -->
     <div class="recent-data">
-      <div class="recent-articles" v-loading="loading.articles">
+      <div v-loading="loading.articles" class="recent-articles">
         <h3>最新文章</h3>
         <ul v-if="recentArticles.length > 0">
           <li v-for="article in recentArticles" :key="article.id">
@@ -112,12 +112,12 @@
           </li>
         </ul>
         <div v-else class="empty-data">
-          <i class="el-icon-document"></i>
+          <i class="el-icon-document" />
           <p>暂无文章数据</p>
         </div>
       </div>
-      
-      <div class="recent-comments" v-loading="loading.comments">
+
+      <div v-loading="loading.comments" class="recent-comments">
         <h3>最新评论</h3>
         <ul v-if="recentComments.length > 0">
           <li v-for="comment in recentComments" :key="comment.id">
@@ -129,7 +129,7 @@
           </li>
         </ul>
         <div v-else class="empty-data">
-          <i class="el-icon-chat-line-square"></i>
+          <i class="el-icon-chat-line-square" />
           <p>暂无评论数据</p>
         </div>
       </div>
@@ -187,13 +187,15 @@ export default {
     // 加载仪表盘数据
     async loadDashboardData() {
       try {
+        // 先获取文章列表，避免重复请求
+        const articlesPromise = getArticleList()
+
         // 并行加载各种数据
         await Promise.all([
           this.loadStatistics(),
           this.loadRecentArticles(),
           this.loadRecentComments(),
-          this.loadCategoryData(),
-          this.loadTagData()
+          this.loadCategoryAndTagData(articlesPromise)
         ])
       } catch (error) {
         this.$message.error('加载仪表盘数据失败')
@@ -208,7 +210,7 @@ export default {
         console.log('开始加载统计数据...')
         const data = await getDashboardStatistics()
         console.log('统计数据响应:', data)
-        
+
         // 响应拦截器已经返回了 res.data.data，所以这里直接是统计数据对象
         this.statistics = {
           articleCount: data.articleCount || 0,
@@ -247,7 +249,7 @@ export default {
         // 使用模拟数据
         this.chartData = [120, 190, 300, 500, 200, 300, 450]
         this.chartLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-        
+
         // 延迟一点时间确保DOM已渲染
         this.$nextTick(() => {
           this.initChart()
@@ -265,7 +267,7 @@ export default {
       try {
         const articles = await getRecentArticles(5)
         console.log('最新文章响应:', articles)
-        
+
         // 响应拦截器已经返回了 res.data.data，所以这里直接是文章数组
         if (Array.isArray(articles)) {
           this.recentArticles = articles.map(article => ({
@@ -298,7 +300,7 @@ export default {
       try {
         const comments = await getRecentComments(5)
         console.log('最新评论响应:', comments)
-        
+
         // 响应拦截器已经返回了 res.data.data，所以这里直接是评论数组
         if (Array.isArray(comments)) {
           this.recentComments = comments.map(comment => ({
@@ -321,27 +323,45 @@ export default {
       }
     },
 
-    // 加载分类数据（使用真实接口数据）
-    async loadCategoryData() {
+    // 加载分类和标签数据（共享文章列表）
+    async loadCategoryAndTagData(articlesPromise) {
+      try {
+        // 并行获取分类列表、标签列表和文章列表
+        const [categories, tags, articles] = await Promise.all([
+          getCategoryList(),
+          getTagList(),
+          articlesPromise
+        ])
+
+        console.log('分类列表响应:', categories)
+        console.log('标签列表响应:', tags)
+        console.log('文章列表响应:', articles)
+
+        // 处理文章数据格式
+        const articleList = Array.isArray(articles) ? articles : (articles.rows || articles.records || [])
+        console.log('处理后的文章列表:', articleList)
+
+        // 同时处理分类和标签数据
+        await Promise.all([
+          this.processCategoryData(categories, articleList),
+          this.processTagData(tags, articleList)
+        ])
+      } catch (error) {
+        console.error('加载分类和标签数据失败:', error)
+        this.$message.error('加载分类和标签数据失败')
+        this.categoryData = []
+        this.tagData = []
+      }
+    },
+
+    // 处理分类数据
+    async processCategoryData(categories, articleList) {
       this.loading.category = true
       try {
-        // 并行获取分类列表和文章列表
-        const [categories, articles] = await Promise.all([
-          getCategoryList(),
-          getArticleList()
-        ])
-        
-        console.log('分类列表响应:', categories)
-        console.log('文章列表响应:', articles)
-        
-        if (Array.isArray(categories) && articles) {
+        if (Array.isArray(categories)) {
           // 统计每个分类下的文章数量
           const categoryStats = {}
-          // 处理不同的文章数据格式
-          const articleList = Array.isArray(articles) ? articles : (articles.rows || articles.records || [])
-          
-          console.log('处理后的文章列表:', articleList)
-          
+
           // 初始化分类统计
           categories.forEach(category => {
             categoryStats[category.id] = {
@@ -350,14 +370,14 @@ export default {
               count: 0
             }
           })
-          
+
           // 统计文章数量
           articleList.forEach(article => {
             if (article.categoryId && categoryStats[article.categoryId]) {
               categoryStats[article.categoryId].count++
             }
           })
-          
+
           // 计算百分比并生成最终数据
           const totalArticles = articleList.length
           this.categoryData = Object.values(categoryStats)
@@ -367,40 +387,28 @@ export default {
               percentage: totalArticles > 0 ? Math.round((category.count / totalArticles) * 100) : 0
             }))
             .sort((a, b) => b.count - a.count) // 按文章数量降序排列
-          
-          console.log('分类数据加载成功:', this.categoryData)
+
+          console.log('分类数据处理成功:', this.categoryData)
         } else {
-          console.warn('分类或文章数据格式不正确')
+          console.warn('分类数据格式不正确')
           this.categoryData = []
         }
       } catch (error) {
-        console.error('加载分类数据失败:', error)
-        this.$message.error('加载分类数据失败')
+        console.error('处理分类数据失败:', error)
         this.categoryData = []
       } finally {
         this.loading.category = false
       }
     },
 
-    // 加载标签数据（使用真实接口数据）
-    async loadTagData() {
+    // 处理标签数据
+    async processTagData(tags, articleList) {
       this.loading.tags = true
       try {
-        // 并行获取标签列表和文章列表
-        const [tags, articles] = await Promise.all([
-          getTagList(),
-          getArticleList()
-        ])
-        
-        console.log('标签列表响应:', tags)
-        console.log('文章列表响应（标签统计）:', articles)
-        
-        if (Array.isArray(tags) && articles) {
+        if (Array.isArray(tags)) {
           // 统计每个标签的使用次数
           const tagStats = {}
-          // 处理不同的文章数据格式
-          const articleList = Array.isArray(articles) ? articles : (articles.rows || articles.records || [])
-          
+
           // 初始化标签统计
           tags.forEach(tag => {
             tagStats[tag.id] = {
@@ -409,7 +417,7 @@ export default {
               count: 0
             }
           })
-          
+
           // 统计标签使用次数
           articleList.forEach(article => {
             if (article.tagIds && Array.isArray(article.tagIds)) {
@@ -420,7 +428,7 @@ export default {
               })
             }
           })
-          
+
           // 计算百分比并生成最终数据
           const maxCount = Math.max(...Object.values(tagStats).map(tag => tag.count))
           this.tagData = Object.values(tagStats)
@@ -431,15 +439,14 @@ export default {
             }))
             .sort((a, b) => b.count - a.count) // 按使用次数降序排列
             .slice(0, 10) // 只显示前10个最常用的标签
-          
-          console.log('标签数据加载成功:', this.tagData)
+
+          console.log('标签数据处理成功:', this.tagData)
         } else {
-          console.warn('标签或文章数据格式不正确')
+          console.warn('标签数据格式不正确')
           this.tagData = []
         }
       } catch (error) {
-        console.error('加载标签数据失败:', error)
-        this.$message.error('加载标签数据失败')
+        console.error('处理标签数据失败:', error)
         this.tagData = []
       } finally {
         this.loading.tags = false
@@ -452,11 +459,11 @@ export default {
       const date = new Date(dateString)
       const now = new Date()
       const diff = now - date
-      
+
       if (diff < 60000) return '刚刚' // 1分钟内
       if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前` // 1小时内
       if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前` // 1天内
-      
+
       return date.toLocaleDateString('zh-CN')
     },
 
@@ -474,27 +481,27 @@ export default {
   &-container {
     margin: 30px;
   }
-  
+
   &-header {
     margin-bottom: 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
+
     .header-left {
       h2 {
         margin: 0 0 5px 0;
         color: #303133;
         font-size: 24px;
       }
-      
+
       p {
         margin: 0;
         color: #909399;
         font-size: 14px;
       }
     }
-    
+
     .header-right {
       .el-button {
         .el-icon-refresh {
@@ -520,12 +527,12 @@ export default {
   display: flex;
   align-items: center;
   transition: transform 0.2s;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
-  
+
   .card-icon {
     font-size: 32px;
     margin-right: 15px;
@@ -535,24 +542,24 @@ export default {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    
+
     &.article-icon {
       background: rgba(64, 158, 255, 0.1);
     }
-    
+
     &.category-icon {
       background: rgba(103, 194, 58, 0.1);
     }
-    
+
     &.view-icon {
       background: rgba(255, 193, 7, 0.1);
     }
-    
+
     &.comment-icon {
       background: rgba(245, 108, 108, 0.1);
     }
   }
-  
+
   .card-content {
     h3 {
       margin: 0 0 5px 0;
@@ -560,17 +567,17 @@ export default {
       font-weight: bold;
       color: #303133;
     }
-    
+
     p {
       margin: 0 0 5px 0;
       color: #909399;
       font-size: 14px;
     }
-    
+
     .trend {
       font-size: 12px;
       color: #909399;
-      
+
       &.up {
         color: #67c23a;
       }
@@ -590,7 +597,7 @@ export default {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  
+
   h3 {
     margin: 0 0 20px 0;
     color: #303133;
@@ -603,13 +610,13 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 15px;
-    
+
     .category-name {
       width: 80px;
       font-size: 12px;
       color: #606266;
     }
-    
+
     .category-bar {
       flex: 1;
       height: 8px;
@@ -617,14 +624,14 @@ export default {
       border-radius: 4px;
       margin: 0 10px;
       overflow: hidden;
-      
+
       .bar-fill {
         height: 100%;
         background: linear-gradient(90deg, #409eff, #67c23a);
         transition: width 0.3s;
       }
     }
-    
+
     .category-count {
       font-size: 12px;
       color: #909399;
@@ -639,7 +646,7 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 15px;
-    
+
     .tag-name {
       width: 80px;
       font-size: 12px;
@@ -648,7 +655,7 @@ export default {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    
+
     .tag-bar {
       flex: 1;
       height: 8px;
@@ -656,14 +663,14 @@ export default {
       border-radius: 4px;
       margin: 0 10px;
       overflow: hidden;
-      
+
       .bar-fill {
         height: 100%;
         background: linear-gradient(90deg, #e6a23c, #f56c6c);
         transition: width 0.3s;
       }
     }
-    
+
     .tag-count {
       font-size: 12px;
       color: #909399;
@@ -684,23 +691,23 @@ export default {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  
+
   h3 {
     margin: 0 0 15px 0;
     color: #303133;
     font-size: 16px;
   }
-  
+
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-  
+
   li {
     padding: 10px 0;
     border-bottom: 1px solid #f0f0f0;
-    
+
     &:last-child {
       border-bottom: none;
     }
@@ -711,11 +718,11 @@ export default {
   li {
     padding: 15px 0;
     border-bottom: 1px solid #f0f0f0;
-    
+
     &:last-child {
       border-bottom: none;
     }
-    
+
     .article-info {
       .article-title {
         color: #303133;
@@ -727,19 +734,19 @@ export default {
         text-overflow: ellipsis;
         white-space: nowrap;
         cursor: pointer;
-        
+
         &:hover {
           color: #409eff;
         }
       }
-      
+
       .article-meta {
         display: flex;
         justify-content: space-between;
         align-items: center;
         font-size: 12px;
         color: #909399;
-        
+
         .article-views {
           background: #f0f9ff;
           color: #409eff;
@@ -747,7 +754,7 @@ export default {
           border-radius: 12px;
           font-size: 11px;
         }
-        
+
         .article-date {
           color: #909399;
         }
@@ -760,11 +767,11 @@ export default {
   li {
     padding: 15px 0;
     border-bottom: 1px solid #f0f0f0;
-    
+
     &:last-child {
       border-bottom: none;
     }
-    
+
     .comment-info {
       .comment-user {
         color: #409eff;
@@ -773,7 +780,7 @@ export default {
         display: block;
         margin-bottom: 8px;
       }
-      
+
       .comment-content {
         color: #606266;
         font-size: 14px;
@@ -784,7 +791,7 @@ export default {
         white-space: nowrap;
         line-height: 1.4;
       }
-      
+
       .comment-article {
         color: #909399;
         font-size: 11px;
@@ -801,14 +808,14 @@ export default {
   text-align: center;
   padding: 40px 20px;
   color: #909399;
-  
+
   i {
     font-size: 48px;
     margin-bottom: 15px;
     display: block;
     color: #dcdfe6;
   }
-  
+
   p {
     margin: 0;
     font-size: 14px;
@@ -820,20 +827,20 @@ export default {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
-    
+
     .header-right {
       align-self: flex-end;
     }
   }
-  
+
   .chart-section {
     grid-template-columns: 1fr;
   }
-  
+
   .recent-data {
     grid-template-columns: 1fr;
   }
-  
+
   .data-cards {
     grid-template-columns: 1fr;
   }

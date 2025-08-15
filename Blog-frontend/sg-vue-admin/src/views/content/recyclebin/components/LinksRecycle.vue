@@ -47,44 +47,44 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
+          v-hasPermission="['content:recyclebin:restore']"
           type="success"
           plain
           icon="el-icon-refresh-right"
           size="mini"
           :disabled="multiple"
           @click="handleBatchRestore"
-          v-hasPermission="['content:recyclebin:restore']"
         >批量恢复</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
+          v-hasPermission="['content:recyclebin:delete']"
           type="danger"
           plain
           icon="el-icon-delete"
           size="mini"
           :disabled="multiple"
           @click="handleBatchDelete"
-          v-hasPermission="['content:recyclebin:delete']"
         >永久删除</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
+          v-hasPermission="['content:recyclebin:clear']"
           type="warning"
           plain
           icon="el-icon-delete-solid"
           size="mini"
           @click="handleClearAll"
-          v-hasPermission="['content:recyclebin:clear']"
         >清空回收站</el-button>
       </el-col>
 
     </el-row>
 
     <!-- 数据表格 -->
-    <el-table 
+    <el-table
       v-loading="loading"
-      :data="linkList" 
-      style="width: 100%" 
+      :data="linkList"
+      style="width: 100%"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" />
@@ -126,27 +126,27 @@
       >
         <template slot-scope="scope">
           <el-button
+            v-hasPermission="['content:recyclebin:query']"
             size="mini"
             type="text"
             icon="el-icon-view"
             @click="handlePreview(scope.row)"
-            v-hasPermission="['content:recyclebin:query']"
           >预览</el-button>
           <el-button
+            v-hasPermission="['content:recyclebin:restore']"
             size="mini"
             type="text"
             icon="el-icon-refresh-right"
             style="color: #67C23A"
             @click="handleRestore(scope.row)"
-            v-hasPermission="['content:recyclebin:restore']"
           >恢复</el-button>
           <el-button
+            v-hasPermission="['content:recyclebin:delete']"
             size="mini"
             type="text"
             icon="el-icon-delete"
             style="color: #F56C6C"
             @click="handleDelete(scope.row)"
-            v-hasPermission="['content:recyclebin:delete']"
           >永久删除</el-button>
         </template>
       </el-table-column>
@@ -261,7 +261,7 @@ export default {
     getList() {
       this.loading = true
       const params = { ...this.queryParams }
-      
+
       listDeletedLinks(params).then(response => {
         this.linkList = response.rows || response.data || []
         this.total = response.total || 0

@@ -2,7 +2,6 @@ package com.wybbb.rainbobit.common.constants;
 
 public class StatisticsConstants {
     public static final String STATISTICS_CACHE_KEY = "rainbobit:statistics:cache";
-    public static final String TODAY_VIEW_COUNT_CACHE_KEY = STATISTICS_CACHE_KEY + ":todayViewCount";
 
     public static final String ARTICLE_COUNT = "articleCount";
     public static final String CATEGORY_COUNT = "categoryCount";

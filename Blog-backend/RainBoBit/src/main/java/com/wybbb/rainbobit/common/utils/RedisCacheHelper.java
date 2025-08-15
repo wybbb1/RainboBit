@@ -5,6 +5,7 @@ import com.wybbb.rainbobit.common.constants.ArticleConstants;
 import com.wybbb.rainbobit.common.constants.UserConstants;
 import com.wybbb.rainbobit.common.enums.AppHttpCodeEnum;
 import com.wybbb.rainbobit.exception.SystemException;
+import com.wybbb.rainbobit.pojo.entity.Link;
 import com.wybbb.rainbobit.pojo.entity.LoginUser;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -183,8 +184,8 @@ public class RedisCacheHelper {
         }
     }
 
-    public <T> T getCacheMapValue(String viewCountCacheKey, String id, Class<T> type) {
-        Object value = stringRedisTemplate.opsForHash().get(viewCountCacheKey, id);
+    public <T> T getCacheMapValue(String cacheKey, String hashKey, Class<T> type) {
+        Object value = stringRedisTemplate.opsForHash().get(cacheKey, hashKey);
         if (value != null) {
             return convertValue(value.toString(), type);
         }
@@ -234,6 +235,17 @@ public class RedisCacheHelper {
         if (value != null) {
             String stringValue = reconvertValue(value, type);
             stringRedisTemplate.opsForHash().put(mapCacheKey, valueName, stringValue);
+        } else {
+            log.error(UserConstants.CACHE_VALUE_NULL);
+            throw new SystemException(UserConstants.CACHE_VALUE_NULL);
+        }
+
+    }
+
+    public <T> void pushList(String cacheKey, T value, Class<T> type) {
+        if (value != null) {
+            String stringValue = reconvertValue(value, type);
+            stringRedisTemplate.opsForList().rightPush(cacheKey, stringValue);
         } else {
             log.error(UserConstants.CACHE_VALUE_NULL);
             throw new SystemException(UserConstants.CACHE_VALUE_NULL);

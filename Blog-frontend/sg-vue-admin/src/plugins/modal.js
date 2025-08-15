@@ -1,6 +1,6 @@
 import { Message, MessageBox, Notification, Loading } from 'element-ui'
 
-let loadingInstance;
+let loadingInstance
 
 export default {
   // 消息提示
@@ -21,19 +21,19 @@ export default {
   },
   // 弹出提示
   alert(content) {
-    MessageBox.alert(content, "系统提示")
+    MessageBox.alert(content, '系统提示')
   },
   // 错误提示
   alertError(content) {
-    MessageBox.alert(content, "系统提示", { type: 'error' })
+    MessageBox.alert(content, '系统提示', { type: 'error' })
   },
   // 成功提示
   alertSuccess(content) {
-    MessageBox.alert(content, "系统提示", { type: 'success' })
+    MessageBox.alert(content, '系统提示', { type: 'success' })
   },
   // 警告提示
   alertWarning(content) {
-    MessageBox.alert(content, "系统提示", { type: 'warning' })
+    MessageBox.alert(content, '系统提示', { type: 'warning' })
   },
   // 通知提示
   notify(content) {
@@ -41,7 +41,7 @@ export default {
   },
   // 错误通知
   notifyError(content) {
-    Notification.error(content);
+    Notification.error(content)
   },
   // 成功通知
   notifySuccess(content) {
@@ -53,10 +53,10 @@ export default {
   },
   // 确认窗体
   confirm(content) {
-    return MessageBox.confirm(content, "系统提示", {
+    return MessageBox.confirm(content, '系统提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: "warning",
+      type: 'warning'
     })
   },
   // 打开遮罩层
@@ -64,12 +64,12 @@ export default {
     loadingInstance = Loading.service({
       lock: true,
       text: content,
-      spinner: "el-icon-loading",
-      background: "rgba(0, 0, 0, 0.7)",
+      spinner: 'el-icon-loading',
+      background: 'rgba(0, 0, 0, 0.7)'
     })
   },
   // 关闭遮罩层
   closeLoading() {
-    loadingInstance.close();
+    loadingInstance.close()
   }
 }

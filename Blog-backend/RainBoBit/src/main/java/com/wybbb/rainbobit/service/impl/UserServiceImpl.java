@@ -254,11 +254,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void add(UserDTO userDTO) {
-        if (userDTO.getUsername() == null || userDTO.getUsername().isBlank()){
+        if (userDTO.getUserName() == null || userDTO.getUserName().isBlank()){
             throw new SystemException(UserConstants.USERNAME_IS_NULL);
         }
         // 检查用户名是否已存在
-        if (userMapper.exists(new LambdaQueryWrapper<>(User.class).eq(User::getUserName, userDTO.getUsername()))) {
+        if (userMapper.exists(new LambdaQueryWrapper<>(User.class).eq(User::getUserName, userDTO.getUserName()))) {
             throw new SystemException(UserConstants.USERNAME_ALREADY_EXISTS);
         }
         // 检查邮箱是否已存在
@@ -273,8 +273,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = BeanUtil.copyProperties(userDTO, User.class);
         // 设置密码
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setUserName(userDTO.getUsername());
-        user.setNickName(userDTO.getNickname());
+        user.setUserName(userDTO.getUserName());
+        user.setNickName(userDTO.getNickName());
 
         save(user);
 
@@ -339,7 +339,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public void update(UserDTO userDTO) {
         User user = BeanUtil.copyProperties(userDTO, User.class);
-        user.setNickName(userDTO.getNickname());
+        user.setNickName(userDTO.getNickName());
         updateById(user);
 
         // 更新文章标签

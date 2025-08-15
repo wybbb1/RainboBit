@@ -3,6 +3,9 @@ package com.wybbb.rainbobit.pojo.entity;
 import java.util.Date;
 
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,15 +44,19 @@ public class Link  {
     private String status;
 
     @Schema(description = "创建人ID")
+    @TableField(fill = FieldFill.INSERT)
     private Long createBy;
 
     @Schema(description = "创建时间")
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     @Schema(description = "更新人ID")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
     @Schema(description = "更新时间")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     @Schema(description = "删除标志（0代表未删除，1代表已删除）", example = "0")

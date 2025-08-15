@@ -1,6 +1,7 @@
 package com.wybbb.rainbobit.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wybbb.rainbobit.pojo.dto.LinkDTO;
 import com.wybbb.rainbobit.pojo.entity.Link;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
 import com.wybbb.rainbobit.pojo.other.PageResult;
@@ -44,8 +45,8 @@ public interface LinkService extends IService<Link> {
     PageResult<LinkVO> listDeletedLinks(PageQuery pageQuery, String name, String url);
 
     // ========== 添加操作 ==========
-    
-    
+
+    void add(LinkDTO linkDTO);
 
     // ========== 更新操作 ==========
     
@@ -80,5 +81,6 @@ public interface LinkService extends IService<Link> {
      * @param ids 友链ID列表
      */
     void batchPermanentDeleteLinks(java.util.List<Long> ids);
+
 }
 

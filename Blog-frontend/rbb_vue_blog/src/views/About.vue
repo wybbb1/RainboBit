@@ -86,16 +86,9 @@ const contactInfo = {
 // 打开联系方式
 const openContact = (type: keyof typeof contactInfo) => {
   const contact = contactInfo[type]
-  
   if (type === 'wechat') {
-    // 微信特殊处理，可以显示二维码或复制微信号
-    navigator.clipboard.writeText(contact.value).then(() => {
-      alert(`微信号 ${contact.value} 已复制到剪贴板`)
-    }).catch(() => {
-      alert(`微信号 ${contact.value}`)
-    })
+    alert(`微信号：${contact.value}`)
   } else {
-    // 其他联系方式直接打开链接
     window.open(contact.link, '_blank')
   }
 }

@@ -1,5 +1,6 @@
 package com.wybbb.rainbobit.controller.admin;
 
+import com.wybbb.rainbobit.pojo.dto.LinkDTO;
 import com.wybbb.rainbobit.pojo.entity.Link;
 import com.wybbb.rainbobit.pojo.other.PageQuery;
 import com.wybbb.rainbobit.pojo.other.ResponseResult;
@@ -30,8 +31,8 @@ public class AdminLinkController {
     @Operation(summary = "添加友链", description = "添加新的友链")
     @PostMapping
     public ResponseResult<?> addLink(
-            @Parameter(description = "友链信息") @RequestBody Link link) {
-        linkService.save(link);
+            @Parameter(description = "友链信息") @RequestBody LinkDTO link) {
+        linkService.add(link);
         return ResponseResult.okResult();
     }
 

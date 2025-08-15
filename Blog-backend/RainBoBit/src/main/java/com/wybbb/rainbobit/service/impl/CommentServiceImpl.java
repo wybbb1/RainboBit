@@ -72,6 +72,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         if (comment.getContent() == null || comment.getContent().isBlank()){
             throw new SystemException(CommentConstants.CONTENT_IS_NULL);
         }
+        comment.setType(String.valueOf(CommentConstants.ARTICLE_COMMENT));
+        comment.setDelFlag(CommentConstants.NOT_DELETED); // 设置为未删除
+        if (comment.getToCommentUserId() == null){
+            comment.setToCommentUserId(Long.valueOf(CommentConstants.ROOT_COMMENT)); // 如果没有回复用户，则设置为根评论
+        }
+        if (comment.getToCommentId() == null){
+            comment.setToCommentId(Long.valueOf(CommentConstants.ROOT_COMMENT)); // 如果没有回复评论，则设置为根评论
+        }
         save(comment);
     }
 

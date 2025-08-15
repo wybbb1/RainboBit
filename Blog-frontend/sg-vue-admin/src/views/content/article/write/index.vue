@@ -44,7 +44,7 @@
             <el-input v-model="form.summary" type="textarea" />
           </el-form-item>
         </el-col>
-         <el-col :span="6">
+        <el-col :span="6">
           <el-form-item label="允许评论">
             <el-radio-group v-model="form.isComment">
               <el-radio :key="'0'" :label="'0'">正常</el-radio>
@@ -183,10 +183,10 @@ export default {
         console.log('提交前移除 tags 字段:', submitData.tags)
         delete submitData.tags
       }
-      
+
       console.log('准备提交的数据:', submitData)
       console.log('tagIds:', submitData.tagIds)
-      
+
       if (!this.aId) {
         submitData.status = '0'
         addArticle(submitData).then(response => {
