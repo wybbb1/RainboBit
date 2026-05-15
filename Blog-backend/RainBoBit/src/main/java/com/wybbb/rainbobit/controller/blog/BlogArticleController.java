@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.Objects;
 
@@ -51,6 +52,11 @@ public class BlogArticleController {
         }
         articleService.updateViewCount(id);
         return ResponseResult.okResult();
+    }
+
+    @GetMapping("/search")
+    public ResponseResult<?> searchArticles(String keyword, PageQuery pageQuery){
+        return ResponseResult.okResult(articleService.searchArticles(keyword, pageQuery));
     }
 
 }

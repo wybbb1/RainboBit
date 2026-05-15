@@ -46,6 +46,11 @@ public interface ArticleService extends IService<Article> {
      */
     List<ArticleListVO> getRecentArticles(int limit);
 
+    /**
+     * 关键词查询文章
+     */
+    PageResult<ArticleListVO> searchArticles(String keyword, PageQuery pageQuery);
+
     // ========================== 添加相关 ==========================
     
     /**
@@ -91,5 +96,4 @@ public interface ArticleService extends IService<Article> {
      * 批量永久删除文章
      */
     void batchPermanentDeleteArticles(List<Long> ids);
-
 }

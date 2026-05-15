@@ -1,6 +1,9 @@
 package com.wybbb.rainbobit.service.impl;
 
+import ai.djl.repository.zoo.Criteria;
 import cn.hutool.core.bean.BeanUtil;
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,6 +24,13 @@ import com.wybbb.rainbobit.pojo.other.PageResult;
 import com.wybbb.rainbobit.pojo.vo.ArticleListVO;
 import com.wybbb.rainbobit.service.ArticleService;
 import jakarta.annotation.Resource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +55,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private TagMapper tagMapper;
     @Resource
     private RedisCacheHelper redisCacheHelper;
+    @Resource
+    private ElasticsearchOperations elasticsearchOperations;
 
     @Transactional
     @Override
@@ -201,6 +213,36 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     articleListVO.setTagIds(tagMapper.getTagsBatch(articleListVO.getId()));
                 })
                 .toList();
+    }
+
+    @Override
+    public PageResult<ArticleListVO> searchArticles(String keyword, PageQuery pageQuery) {
+        // 关键词查询文章
+        Query query = new NativeQueryBuilder()
+                .withQuery(q -> q
+                        .match(m -> m
+                                .field("all")
+                                .query(keyword)
+                        )
+                )
+                .withPageable(PageRequest.of(pageQuery.getPage() - 1, pageQuery.getPageSize()))
+                .build();
+        SearchHits<Article> searchHits = elasticsearchOperations.search(
+                query,
+                Article.class);
+
+        return new PageResult<>(
+                searchHits.getTotalHits(),
+                searchHits.getSearchHits().stream()
+                        .map(SearchHit::getContent)
+                        .peek(article -> {
+                            // 设置标签id
+                            ArticleListVO articleListVO = BeanUtil.copyProperties(article, ArticleListVO.class);
+                            articleListVO.setTagIds(tagMapper.getTagsBatch(articleListVO.getId()));
+                        })
+                        .map(article -> BeanUtil.copyProperties(article, ArticleListVO.class))
+                        .toList()
+        );
     }
 
     @Override

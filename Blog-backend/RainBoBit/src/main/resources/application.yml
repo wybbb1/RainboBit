@@ -2,12 +2,18 @@ server:
   port: 7777
 
 spring:
+  profiles:
+    active: dev
+
   application:
     name: RainBoBit
 
+  elasticsearch:
+    uris: ${spring.elasticsearch.uris}
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://mysql:3306/rbb_blog?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false
+    url: ${spring.datasource.url}
     username: root
     password: ${spring.datasource.password}
 
@@ -68,6 +74,18 @@ rainbobit:
     secret-key: ${sky.jwt.secret-key}
     ttl: 7200000 # 2小时
     token-name: token
+
+langchain4j:
+  open-ai:
+    streaming-chat-model:
+      api-key: ${llm.api.key}
+      model-name: ${llm.api.model-name}
+      base-url: ${llm.api.chat-url}
+    chat-model:
+      api-key: ${llm.api.key}
+      model-name: ${llm.api.model-name}
+      base-url: ${llm.api.chat-url}
+
 
 
 # SpringDoc配置
